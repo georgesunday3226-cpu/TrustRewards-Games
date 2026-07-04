@@ -1,32 +1,422 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AvoidWahala</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Brick Breaker - TrustRewards</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
+  font-family: 'Arial Black', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  touch-action: none;
+}
+#gameContainer {
+  background: linear-gradient(145deg, #16213e, #0f3460);
+  border-radius: 20px;
+  padding: 15px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  border: 3px solid #FFD700;
+}
+canvas {
+  display: block;
+  border-radius: 10px;
+  background: #000;
+  box-shadow: inset 0 0 30px rgba(0,255,255,0.2);
+}
+#ui {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border-radius: 15px;
+  color: #000;
+  font-weight: 900;
+  box-shadow: 0 5px 20px rgba(255,215,0,0.5);
+}
+#ui > div {
+  text-align: center;
+  font-size: 14px;
+}
+#coinsDisplay { font-weight: 900; }
+#timerDisplay {
+  font-size: 18px;
+  font-weight: 900;
+  color: #D50000;
+  text-shadow: 0 0 10px rgba(255,0,0,0.8);
+  animation: timerPulse 1s infinite;
+}
+@keyframes timerPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+#scoreDisplay { font-size: 14px; font-weight: 900; }
+#gameOver {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.98);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+}
+#gameOver h1 {
+  font-size: 42px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 30px #FFD700;
+  animation: pulse 1s infinite;
+}
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+#gameOver button {
+  padding: 18px 45px;
+  font-size: 22px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 15px;
+  color: white;
+  margin-top: 15px;
+  font-weight: 900;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+}
+#startScreen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.95);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+#startScreen h1 { font-size: 42px; margin-bottom: 15px; color: #FFD700; }
+#startScreen p { font-size: 16px; margin-bottom: 10px; line-height: 1.6; }
+#startScreen button {
+  padding: 18px 45px;
+  font-size: 22px;
+  background: linear-gradient(135deg, #00ff00 0%, #00aa00 100%);
+  border: none;
+  border-radius: 15px;
+  color: white;
+  font-weight: 900;
+  box-shadow: 0 8px 30px rgba(0, 255, 0, 0.6);
+  margin-top: 20px;
+}
+</style>
 </head>
 <body>
-  <div class="game-container">
-    <h2>AVOID WAHALA</h2>
-    <div class="stats">
-      <div>SCORE: <span id="score">0</span></div>
-      <div>LEVEL: <span id="level">1</span></div>
-      <div>BEST: <span id="highScore">0</span></div>
-    </div>
-    
-    <div id="gameArea">
-      <div id="player"></div>
-    </div>
-    
-    <div class="controls">
-      <button id="leftBtn">◀</button>
-      <button id="rightBtn">▶</button>
-    </div>
-    
-    <p id="gameOver"></p>
-    <button id="restartBtn">TRY AGAIN</button>
+  <div id="startScreen">
+    <h1>🧱 BRICK BREAKER 🧱</h1>
+    <p><strong>Rules:</strong></p>
+    <p>⏰ Survive <strong>2 minutes</strong> = <strong>15 coins</strong></p>
+    <p>🏆 Clear all bricks = <strong>15 coins</strong></p>
+    <p>💀 Ball drops = <strong>0 coins</strong></p>
+    <p style="margin-top: 15px;">Drag to move paddle</p>
+    <button onclick="startGame()">START GAME</button>
   </div>
-  
-  <script src="script.js"></script>
+
+  <div id="gameContainer" style="display:none;">
+    <div id="ui">
+      <div id="coinsDisplay">💰 <span id="coinsCount">0</span></div>
+      <div id="timerDisplay">⏰ <span id="timeLeft">2:00</span></div>
+      <div id="scoreDisplay">⭐ <span id="scoreNum">0</span></div>
+    </div>
+    <canvas id="game"></canvas>
+  </div>
+
+  <div id="gameOver">
+    <h1 id="gameOverTitle">TIME'S UP!</h1>
+    <p style="font-size: 32px; color: gold; font-weight: 900; margin: 15px 0;">+<span id="earnedCoins">15</span> COINS! 💰</p>
+    <p style="font-size: 18px;" id="finalMessage">You survived 2 minutes!</p>
+    <p style="font-size: 16px;" id="finalScore">Score: 0</p>
+    <button onclick="resetGame()">PLAY AGAIN</button>
+  </div>
+
+<audio id="hitSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2a7e9d6e3c.mp3" type="audio/mpeg">
+</audio>
+<audio id="breakSound">
+  <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3" type="audio/mpeg">
+</audio>
+<audio id="winSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const WIDTH = Math.min(window.innerWidth * 0.9, 400);
+const HEIGHT = Math.min(window.innerHeight * 0.7, 600);
+canvas.width = WIDTH;
+canvas.height = HEIGHT;
+
+let coins = parseInt(localStorage.getItem('userCoins')) || 0;
+document.getElementById('coinsCount').textContent = coins;
+
+function addCoins(amount) {
+  coins += amount;
+  localStorage.setItem('userCoins', coins);
+  document.getElementById('coinsCount').textContent = coins;
+  if (window.AppInventor) {
+    window.AppInventor.setWebViewString('COINS:' + coins);
+  }
+}
+
+function playSound(id) {
+  const audio = document.getElementById(id);
+  audio.currentTime = 0;
+  audio.play().catch(e => {});
+}
+
+let gameRunning = false;
+let animationId = null;
+let score = 0;
+let timeLeft = 120; // CHANGED TO 2 MINUTES = 120 seconds
+let timerInterval = null;
+
+const paddle = {
+  x: WIDTH / 2 - 50,
+  y: HEIGHT - 30,
+  width: 100,
+  height: 15
+};
+
+const ball = {
+  x: WIDTH / 2,
+  y: HEIGHT / 2,
+  radius: 8,
+  dx: 4,
+  dy: -4,
+  speed: 5
+};
+
+let bricks = [];
+const brickRows = 5;
+const brickCols = 8;
+const brickWidth = WIDTH / brickCols - 5;
+const brickHeight = 25;
+const brickPadding = 5;
+const brickOffsetTop = 60;
+
+function initBricks() {
+  bricks = [];
+  for (let r = 0; r < brickRows; r++) {
+    bricks[r] = [];
+    for (let c = 0; c < brickCols; c++) {
+      bricks[r][c] = {
+        x: c * (brickWidth + brickPadding) + brickPadding,
+        y: r * (brickHeight + brickPadding) + brickOffsetTop,
+        width: brickWidth,
+        height: brickHeight,
+        visible: true,
+        color: `hsl(${r * 60}, 100%, 50%)`
+      };
+    }
+  }
+}
+
+function updateTimer() {
+  timeLeft--;
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  document.getElementById('timeLeft').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+  if (timeLeft <= 0) {
+    endGame('time');
+  }
+}
+
+function startGame() {
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'block';
+  initBricks();
+  resetBall();
+  timeLeft = 120; // 2 MINUTES
+  score = 0;
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('timeLeft').textContent = '2:00';
+  gameRunning = true;
+  timerInterval = setInterval(updateTimer, 1000);
+  gameLoop();
+}
+
+function resetBall() {
+  ball.x = WIDTH / 2;
+  ball.y = HEIGHT / 2;
+  ball.dx = (Math.random() > 0.5? 1 : -1) * ball.speed;
+  ball.dy = -ball.speed;
+  paddle.x = WIDTH / 2 - paddle.width / 2;
+}
+
+function resetGame() {
+  document.getElementById('gameOver').style.display = 'none';
+  clearInterval(timerInterval);
+  startGame();
+}
+
+function endGame(reason) {
+  gameRunning = false;
+  clearInterval(timerInterval);
+  cancelAnimationFrame(animationId);
+
+  if (reason === 'win') {
+    playSound('winSound');
+    addCoins(15);
+    document.getElementById('gameOverTitle').textContent = 'LEVEL CLEARED!';
+    document.getElementById('earnedCoins').textContent = '15';
+    document.getElementById('finalMessage').textContent = 'You broke all bricks!';
+  } else if (reason === 'time') {
+    playSound('winSound');
+    addCoins(15); // CHANGED TO 15 COINS
+    document.getElementById('gameOverTitle').textContent = "TIME'S UP!";
+    document.getElementById('earnedCoins').textContent = '15';
+    document.getElementById('finalMessage').textContent = 'You survived 2 minutes!';
+  } else {
+    document.getElementById('gameOverTitle').textContent = 'GAME OVER!';
+    document.getElementById('earnedCoins').textContent = '0';
+    document.getElementById('finalMessage').textContent = 'Sorry, try again!';
+  }
+
+  document.getElementById('finalScore').textContent = 'Score: ' + score;
+  document.getElementById('gameOver').style.display = 'flex';
+}
+
+function gameLoop() {
+  if (!gameRunning) return;
+
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+  // Draw bricks
+  for (let r = 0; r < brickRows; r++) {
+    for (let c = 0; c < brickCols; c++) {
+      const brick = bricks[r][c];
+      if (brick.visible) {
+        ctx.fillStyle = brick.color;
+        ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
+      }
+    }
+  }
+
+  // Draw paddle
+  ctx.shadowColor = '#00ff00';
+  ctx.shadowBlur = 15;
+  const gradient = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x, paddle.y + paddle.height);
+  gradient.addColorStop(0, '#00ff00');
+  gradient.addColorStop(1, '#00aa00');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+  ctx.shadowBlur = 0;
+
+  // Draw ball
+  ctx.shadowColor = '#ffffff';
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Move ball
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  // Wall collision
+  if (ball.x + ball.radius > WIDTH || ball.x - ball.radius < 0) {
+    ball.dx = -ball.dx;
+    playSound('hitSound');
+  }
+  if (ball.y - ball.radius < 0) {
+    ball.dy = -ball.dy;
+    playSound('hitSound');
+  }
+
+  // Paddle collision
+  if (ball.y + ball.radius > paddle.y &&
+      ball.x > paddle.x &&
+      ball.x < paddle.x + paddle.width) {
+    ball.dy = -Math.abs(ball.dy);
+    const hitPos = (ball.x - paddle.x) / paddle.width;
+    ball.dx = (hitPos - 0.5) * 8;
+    playSound('hitSound');
+  }
+
+  // Brick collision
+  for (let r = 0; r < brickRows; r++) {
+    for (let c = 0; c < brickCols; c++) {
+      const brick = bricks[r][c];
+      if (brick.visible &&
+          ball.x > brick.x &&
+          ball.x < brick.x + brick.width &&
+          ball.y > brick.y &&
+          ball.y < brick.y + brick.height) {
+        ball.dy = -ball.dy;
+        brick.visible = false;
+        score += 10;
+        document.getElementById('scoreNum').textContent = score;
+        playSound('breakSound');
+      }
+    }
+  }
+
+  // Check win - all bricks broken
+  const remainingBricks = bricks.flat().filter(b => b.visible).length;
+  if (remainingBricks === 0) {
+    endGame('win');
+    return;
+  }
+
+  // Game over - ball falls
+  if (ball.y - ball.radius > HEIGHT) {
+    endGame('fail');
+    return;
+  }
+
+  animationId = requestAnimationFrame(gameLoop);
+}
+
+// Touch controls
+let isDragging = false;
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  isDragging = true;
+});
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (!isDragging) return;
+  const rect = canvas.getBoundingClientRect();
+  const touchX = e.touches[0].clientX - rect.left;
+  paddle.x = touchX - paddle.width / 2;
+  if (paddle.x < 0) paddle.x = 0;
+  if (paddle.x + paddle.width > WIDTH) paddle.x = WIDTH - paddle.width;
+});
+canvas.addEventListener('touchend', () => {
+  isDragging = false;
+});
+
+// Mouse controls
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  paddle.x = mouseX - paddle.width / 2;
+  if (paddle.x < 0) paddle.x = 0;
+  if (paddle.x + paddle.width > WIDTH) paddle.x = WIDTH - paddle.width;
+});
+</script>
 </body>
 </html>
