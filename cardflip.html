@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        .game-container {
+            background: #1a1a2e;
+            border: 3px solid #00ff88;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 30px #00ff88;
+        }
+        .header {
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            padding: 10px 20px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #0a0a1a;
+        }
+        .header div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .win-condition {
+            text-align: center;
+            color: #00ff88;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 300px;
+        }
+        .card {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #6a5acd, #483d8b);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px #2e2556;
+            transition: transform 0.3s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        .card:active { transform: translateY(2px); box-shadow: 0 2px #2e2556; }
+        .card.flipped {
+            background: #fff;
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            background: #00ff88;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .card-front, .card-back {
+            position: absolute;
+            backface-visibility: hidden;
+        }
+        .card-back {
+            color: #ff0040;
+            transform: rotateY(180deg);
+        }
+        #gameOver {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+        }
+        .gameOverBox {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #00ff88;
+            box-shadow: 0 0 30px #00ff88;
+        }
+        #gameOverTitle {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+        #finalMessage {
+            font-size: 18px;
+            margin: 15px 0;
+        }
+        #earnedCoins {
+            font-size: 24px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .gameOverBtn {
+            padding: 15px 40px;
+            font-size: 18px;
+            background: #00ff88;
+            border: none;
+            border-radius: 10px;
+            color: #0a0a1a;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div>💰 <span id="coins">0</span></div>
+            <div>⏰ <span id="timer">2:00</span></div>
+            <div>🎯 <span id="pairs">0</span>/10</div>
+            <div>🔊</div>
+        </div>
+        
+        <div class="win-condition">MATCH ALL 10 PAIRS = WIN 10 COINS</div>
+        
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <div id="gameOver">
+        <div class="gameOverBox">
+            <h2 id="gameOverTitle">YOU WIN!</h2>
+            <p id="finalMessage">All 10 pairs matched!</p>
+            <p>Coins Earned: <span id="earnedCoins">10</span></p>
+            <button class="gameOverBtn" onclick="location.reload()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const coinsEl = document.getElementById('coins');
+        const timerEl = document.getElementById('timer');
+        const pairsEl = document.getElementById('pairs');
+        
+        const emojis = ['🚀','⭐','🎮','🏆','💎','🔥','⚡','🎯','🎨','🎪'];
+        let cards = [...emojis, ...emojis];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let timeLeft = 120;
+        let timer;
+        let canFlip = true;
+        
+        let totalCoins = localStorage.getItem('memoryCoins') || 0;
+        coinsEl.textContent = totalCoins;
+
+        // Shuffle cards
+        cards.sort(() => Math.random() - 0.5);
+
+        // Create grid
+        cards.forEach((emoji, index) => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.emoji = emoji;
+            card.dataset.index = index;
+            card.innerHTML = `
+                <div class="card-front">?</div>
+                <div class="card-back">${emoji}</div>
+            `;
+            card.addEventListener('click', () => flipCard(card));
+            grid.appendChild(card);
+        });
+
+        function flipCard(card) {
+            if (!canFlip || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+            
+            card.classList.add('flipped');
+            flippedCards.push(card);
+            
+            if (flippedCards.length === 2) {
+                canFlip = false;
+                setTimeout(checkMatch, 600);
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            
+            if (card1.dataset.emoji === card2.dataset.emoji) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                pairsEl.textContent = matchedPairs;
+                
+                if (matchedPairs === 10) {
+                    winGame();
+                }
+            } else {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+            }
+            
+            flippedCards = [];
+            canFlip = true;
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function winGame() {
+            clearInterval(timer);
+            document.getElementById('gameOverTitle').textContent = 'YOU WIN!';
+            document.getElementById('earnedCoins').textContent = '10';
+            document.getElementById('finalMessage').textContent = 'All 10 pairs matched!';
+            
+            // SEND CLAIM TO KODULAR - 10 COINS
+            if (window.AppInventor) {
+                window.AppInventor.setWebViewString("CLAIM:BRICK:10");
+            }
+            
+            // Save coins
+            totalCoins = parseInt(totalCoins) + 10;
+            localStorage.setItem('memoryCoins', totalCoins);
+            coinsEl.textContent = totalCoins;
+            
+            document.getElementById('gameOver').style.display = 'flex';
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            document.getElementById('gameOverTitle').textContent = "TIME'S UP!";
+            document.getElementById('earnedCoins').textContent = '0';
+            document.getElementById('finalMessage').textContent = `You matched ${matchedPairs}/10 pairs - 0 Coins`;
+            document.getElementById('gameOver').style.display = 'flex';
+        }
+
+        // Start game
+        startTimer();
+    </script>
+</body>
+</html>
