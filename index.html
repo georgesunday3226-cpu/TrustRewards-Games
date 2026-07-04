@@ -3,151 +3,583 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Disco Stone Rain - TrustRewards</title>
+<title>Disco Bottle Shooter - TrustRewards</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:radial-gradient(circle,#330066 0%,#000 70%);font-family:'Arial Black',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden;touch-action:none}
-#gameContainer{background:#000;border-radius:20px;padding:12px;box-shadow:0 0 80px #ff0080,0 0 120px #00ffff;border:4px solid #ff0080;max-width:380px;width:95%;position:relative}
-#ui{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;padding:10px;background:linear-gradient(90deg,#ff0080,#00ffff);border-radius:15px;color:#000;font-weight:900;font-size:11px;border:3px solid #fff}
-#ui>div{text-align:center}
-#condition{margin-bottom:8px;padding:8px;background:linear-gradient(90deg,#ffff00,#ff0080);border-radius:12px;color:#000;font-weight:900;text-align:center;font-size:12px;border:3px solid #fff;animation:flash 0.8s infinite}
-@keyframes flash{0%,100%{box-shadow:0 0 25px #ffff00}50%{box-shadow:0 0 35px #ff0080}}
-#timer{color:#ff0000;text-shadow:0 0 20px #ff0000;animation:beat 0.5s infinite}
-@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
-#insaneMode{display:none;background:#ff0000;color:#fff;padding:8px;border-radius:10px;margin-bottom:8px;text-align:center;font-weight:900;font-size:15px;animation:insane 0.2s infinite;border:4px solid #ffff00}
-@keyframes insane{0%,100%{background:#ff0000;transform:scale(1) rotate(-1deg)}50%{background:#ff6600;transform:scale(1.08) rotate(1deg)}}
-#gameCanvas{display:block;width:100%;background:#000;border-radius:15px;border:3px solid #00ffff;box-shadow:inset 0 0 40px #ff0080}
-#startScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;text-align:center;padding:20px}
-#startScreen h1{font-size:42px;margin-bottom:20px;background:linear-gradient(45deg,#ff0080,#00ffff,#ffff00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:hue 1.5s infinite}
-@keyframes hue{0%{filter:hue-rotate(0deg) brightness(1.5)}100%{filter:hue-rotate(360deg) brightness(1.5)}}
-#startScreen p{font-size:17px;margin-bottom:12px;text-shadow:0 0 15px #ff0080}
-#startScreen button{padding:22px 55px;font-size:26px;background:linear-gradient(135deg,#ff0080,#00ffff);border:5px solid #fff;border-radius:18px;color:#000;font-weight:900;box-shadow:0 12px 50px #ff0080;margin-top:25px;animation:btnPulse 1s infinite}
-@keyframes btnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-#gameOver{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.98);z-index:1000;align-items:center;justify-content:center;flex-direction:column;color:white}
-#gameOver h1{font-size:50px;margin-bottom:20px;background:linear-gradient(45deg,#ff0080,#00ffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 50px #ff0080}
-#gameOver button{padding:22px 55px;font-size:26px;background:linear-gradient(135deg,#ff0080,#00ffff);border:5px solid #fff;border-radius:18px;color:#000;font-weight:900;margin-top:25px}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: radial-gradient(circle at 50% 20%, #ff0080 0%, #1a0033 40%, #000000 100%);
+  font-family: 'Arial Black', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+#gameContainer {
+  background: linear-gradient(145deg, #1a0033, #330066);
+  border-radius: 25px;
+  padding: 15px;
+  box-shadow: 0 0 80px rgba(255,0,128,1), 0 0 120px rgba(0,255,255,0.6);
+  border: 5px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  max-width: 400px;
+  width: 95%;
+}
+#gameContainer::before {
+  content: '';
+  position: absolute;
+  top: -5px; left: -5px; right: -5px; bottom: -5px;
+  background: linear-gradient(45deg, #ff0080, #00ffff, #ffff00, #ff0080);
+  border-radius: 25px;
+  z-index: -1;
+  animation: neonSpin 4s linear infinite;
+}
+@keyframes neonSpin {
+  0% { filter: hue-rotate(0deg) brightness(1.8); }
+  100% { filter: hue-rotate(360deg) brightness(1.8); }
+}
+#ui {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 12px;
+  background: linear-gradient(135deg, #ff0080 0%, #ffff00 100%);
+  border-radius: 18px;
+  color: #000;
+  font-weight: 900;
+  box-shadow: 0 8px 35px rgba(255,0,128,0.9);
+  border: 3px solid #fff;
+}
+#ui > div {
+  text-align: center;
+  font-size: 12px;
+  text-shadow: 0 0 8px rgba(255,255,255,0.7);
+}
+#conditionBar {
+  background: linear-gradient(90deg, #00ffff, #ff0080, #ffff00);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  color: #000;
+  font-size: 15px;
+  text-align: center;
+  border: 3px solid #fff;
+  font-weight: 900;
+  text-shadow: 0 0 12px rgba(255,255,255,1);
+  animation: conditionFlash 1.5s infinite;
+}
+@keyframes conditionFlash {
+  0%, 100% { box-shadow: 0 0 25px rgba(255,0,128,0.8); }
+  50% { box-shadow: 0 0 40px rgba(0,255,255,1); }
+}
+#timerDisplay {
+  font-size: 16px;
+  font-weight: 900;
+  color: #ff0000;
+  text-shadow: 0 0 20px rgba(255,0,0,1);
+  animation: timerBeat 1s infinite;
+}
+@keyframes timerBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+#musicBtn {
+  background: rgba(0,0,0,0.5);
+  border: 3px solid #fff;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#musicBtn:active { transform: scale(0.8); }
+#gameCanvas {
+  display: block;
+  width: 100%;
+  background: radial-gradient(circle at 50% 100%, #330066 0%, #000000 100%);
+  border-radius: 18px;
+  box-shadow: inset 0 0 50px rgba(255,0,128,0.5), 0 0 40px rgba(0,255,255,0.4);
+  border: 4px solid #ff0080;
+}
+#gameOver {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.98);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+}
+#gameOver h1 {
+  font-size: 52px;
+  margin-bottom: 20px;
+  background: linear-gradient(45deg, #ff0080, #00ffff, #ffff00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: winBounce 0.8s infinite;
+  text-shadow: 0 0 50px #ff0080;
+}
+@keyframes winBounce { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.15) rotate(2deg); } }
+#gameOver button {
+  padding: 22px 55px;
+  font-size: 26px;
+  background: linear-gradient(135deg, #ff0080 0%, #00ffff 100%);
+  border: 5px solid #fff;
+  border-radius: 20px;
+  color: #000;
+  margin-top: 25px;
+  font-weight: 900;
+  box-shadow: 0 12px 50px rgba(255, 0, 128, 1);
+}
+#startScreen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle, #1a0033 0%, #000000 100%);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+#startScreen h1 {
+  font-size: 50px;
+  margin-bottom: 25px;
+  background: linear-gradient(45deg, #ff0080, #00ffff, #ffff00, #ff0080);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: discoText 2s infinite;
+  text-shadow: 0 0 60px rgba(255,0,128,1);
+}
+@keyframes discoText {
+  0%, 100% { filter: hue-rotate(0deg) brightness(1.3); }
+  50% { filter: hue-rotate(180deg) brightness(1.6); }
+}
+#startScreen p { font-size: 18px; margin-bottom: 14px; line-height: 1.7; text-shadow: 0 0 15px rgba(255,0,128,0.8); }
+#startScreen button {
+  padding: 22px 55px;
+  font-size: 26px;
+  background: linear-gradient(135deg, #ff0080 0%, #00ffff 100%);
+  border: 5px solid #fff;
+  border-radius: 20px;
+  color: #000;
+  font-weight: 900;
+  box-shadow: 0 12px 50px rgba(255, 0, 128, 1);
+  margin-top: 30px;
+  animation: btnBeat 1.2s infinite;
+}
+@keyframes btnBeat {
+  0%, 100% { transform: scale(1); box-shadow: 0 12px 50px rgba(255, 0, 128, 1); }
+  50% { transform: scale(1.05); box-shadow: 0 18px 60px rgba(0, 255, 255, 1); }
+}
+#crosshair {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+  display: none;
+}
+#crosshair::before, #crosshair::after {
+  content: '';
+  position: absolute;
+  background: #00ffff;
+  box-shadow: 0 0 10px #00ffff;
+}
+#crosshair::before {
+  width: 30px;
+  height: 3px;
+  top: 13.5px;
+  left: 0;
+}
+#crosshair::after {
+  width: 3px;
+  height: 30px;
+  left: 13.5px;
+  top: 0;
+}
 </style>
 </head>
 <body>
   <div id="startScreen">
-    <h1>🌧️ STONE RAIN 🌧️</h1>
-    <p><strong>IMPOSSIBLE MODE:</strong></p>
-    <p>⏰ Survive <strong>2 MINUTES</strong></p>
-    <p>💀 One stone = <strong>DEAD</strong></p>
-    <p>🔥 After 30s = <strong>STORM MODE</strong></p>
-    <p>🏆 Win = <strong>10 COINS</strong> 💰</p>
-    <p style="margin-top:20px;color:#00ffff;font-size:19px">🎵 MUSIC + RAIN + STONES 🎵</p>
-    <button onclick="startGame()">START STORM</button>
+    <h1>🍾 BOTTLE SHOOTER 🍾</h1>
+    <p><strong>WIN CONDITION:</strong></p>
+    <p>⏰ Smash <strong>5 BOTTLES</strong> in <strong>1 MINUTE</strong></p>
+    <p>🏆 Success = <strong>10 COINS</strong> 💰</p>
+    <p>💀 Fail = <strong>0 COINS</strong></p>
+    <p style="margin-top: 25px; font-size: 20px;">🎵 DISCO MUSIC + NEON BOTTLES 🎵</p>
+    <p style="font-size: 16px; color: #00ffff;">TAP ANYWHERE TO SHOOT!</p>
+    <button onclick="startGame()">START SHOOTING</button>
   </div>
 
-  <div id="gameContainer" style="display:none">
+  <div id="gameContainer" style="display:none;">
     <div id="ui">
-      <div>💰 <span id="coins">0</span></div>
-      <div id="timer">⏰ <span id="time">120</span>s</div>
-      <div>🔊 <span id="musicBtn" onclick="toggleMusic()">ON</span></div>
+      <div>💰 <span id="coinsCount">0</span></div>
+      <div id="timerDisplay">⏰ <span id="timeLeft">1:00</span></div>
+      <div>🍾 <span id="hitsCount">0/5</span></div>
+      <div id="musicBtn" onclick="toggleMusic()">🔊</div>
     </div>
-    <div id="condition">⚡ SURVIVE 2 MIN | 1 STONE = DEAD | WIN = 10 COINS ⚡</div>
-    <div id="insaneMode">🌧️🌧️ STORM MODE - STONES EVERYWHERE 🌧️🌧️</div>
+    <div id="conditionBar">🍾 BOTTLES LEFT: <span id="targetsLeft">5</span> | WIN = 10 COINS 🍾</div>
     <canvas id="gameCanvas"></canvas>
+    <div id="crosshair"></div>
   </div>
 
   <div id="gameOver">
-    <h1 id="overTitle">GOD MODE!</h1>
-    <p style="font-size:38px;color:#ff0080;font-weight:900;margin:25px 0;text-shadow:0 0 25px #ff0080">+<span id="earned">10</span> COINS! 💰</p>
-    <p style="font-size:19px" id="overMsg">2 minutes survived!</p>
-    <button onclick="resetGame()">TRY AGAIN</button>
+    <h1 id="gameOverTitle">SMASHED IT!</h1>
+    <p style="font-size: 42px; color: #ff0080; font-weight: 900; margin: 25px 0; text-shadow: 0 0 30px #ff0080;">+<span id="earnedCoins">10</span> COINS! 💰</p>
+    <p style="font-size: 22px;" id="finalMessage">5 BOTTLES DESTROYED!</p>
+    <p style="font-size: 19px;" id="finalStats">Hits: 5</p>
+    <button onclick="resetGame()">SHOOT AGAIN</button>
   </div>
 
-<audio id="hitSound"><source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2a7e9d6e3c.mp3" type="audio/mpeg"></audio>
-<audio id="winSound"><source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3" type="audio/mpeg"></audio>
-<audio id="bgMusic" loop preload="auto"><source src="https://cdn.pixabay.com/download/audio/2024/08/07/audio_1e2f3d4c5b.mp3" type="audio/mpeg"></audio>
+<audio id="shootSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_5c4e6c7b4f.mp3" type="audio/mpeg">
+</audio>
+<audio id="breakSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2a7e9d6e3c.mp3" type="audio/mpeg">
+</audio>
+<audio id="winSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3" type="audio/mpeg">
+</audio>
+<audio id="bgMusic" loop preload="auto">
+  <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_946bc2bb0b.mp3" type="audio/mpeg">
+</audio>
 
 <script>
-const c=document.getElementById('gameCanvas'),ctx=c.getContext('2d');c.width=360,c.height=480;
-let coins=parseInt(localStorage.getItem('userCoins'))||0;document.getElementById('coins').textContent=coins;
-let musicOn=false,running=false,time=120,timer=null,player={x:180,y:440,w:20,h:20},stones=[],particles=[],rain=[],difficulty=1,storm=false;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const crosshair = document.getElementById('crosshair');
+canvas.width = 380;
+canvas.height = 500;
 
-function addCoins(a){coins+=a;localStorage.setItem('userCoins',coins);document.getElementById('coins').textContent=coins;if(window.AppInventor)window.AppInventor.setWebViewString('COINS:'+coins)}
-function playSound(id){const a=document.getElementById(id);a.currentTime=0;a.play().catch(e=>{})}
-function toggleMusic(){const m=document.getElementById('bgMusic'),b=document.getElementById('musicBtn');if(musicOn){m.pause();b.textContent='OFF';musicOn=false}else{m.volume=0.9;m.play().then(()=>{b.textContent='ON';musicOn=true}).catch(e=>{alert('TAP START FIRST!')})}}
+let coins = parseInt(localStorage.getItem('userCoins')) || 0;
+document.getElementById('coinsCount').textContent = coins;
+let musicPlaying = false;
+const TARGET_GOAL = 5;
 
-function startGame(){
-document.getElementById('startScreen').style.display='none';
-document.getElementById('gameContainer').style.display='block';
-// FORCE MUSIC TO PLAY
-const m=document.getElementById('bgMusic');m.volume=0.9;m.currentTime=0;m.play().then(()=>{musicOn=true;document.getElementById('musicBtn').textContent='ON'}).catch(e=>{console.log('Music blocked:',e)});
-time=120;stones=[];particles=[];rain=[];difficulty=1;storm=false;player.x=180;player.y=440;
-document.getElementById('time').textContent=120;document.getElementById('insaneMode').style.display='none';running=true;
-// Create rain drops
-for(let i=0;i<100;i++){rain.push({x:Math.random()*c.width,y:Math.random()*c.height,v:Math.random()*3+2,len:Math.random()*15+10})}
-timer=setInterval(()=>{time--;document.getElementById('time').textContent=time;
-if(time===90&&!storm){storm=true;document.getElementById('insaneMode').style.display='block';difficulty=4}
-if(storm)difficulty+=0.2;else if(time%3===0)difficulty+=0.15;
-if(time<=0)endGame(true)},1000);
-spawnStone();gameLoop();
+function addCoins(amount) {
+  coins += amount;
+  localStorage.setItem('userCoins', coins);
+  document.getElementById('coinsCount').textContent = coins;
+  if (window.AppInventor) {
+    window.AppInventor.setWebViewString('COINS:' + coins);
+  }
 }
 
-function spawnStone(){
-if(!running)return;
-const size=storm?Math.random()*15+10:Math.random()*20+15;
-const speed=storm?5+difficulty*2.5:3+difficulty*1.8;
-stones.push({x:Math.random()*(c.width-size),y:-size,w:size,h:size,v:speed,rot:Math.random()*Math.PI*2,rotSpeed:(Math.random()-0.5)*0.2});
-const delay=storm?200-difficulty*30:600-difficulty*80;
-setTimeout(spawnStone,Math.max(80,delay));
+function playSound(id) {
+  const audio = document.getElementById(id);
+  audio.currentTime = 0;
+  audio.play().catch(e => console.log('Sound error:', e));
 }
 
-function drawPlayer(){
-ctx.shadowBlur=25;ctx.shadowColor='#00ffff';
-ctx.fillStyle='#00ffff';ctx.beginPath();ctx.arc(player.x+player.w/2,player.y+player.h/2,player.w/2,0,Math.PI*2);ctx.fill();
-ctx.shadowBlur=0;
+function toggleMusic() {
+  const bgMusic = document.getElementById('bgMusic');
+  const btn = document.getElementById('musicBtn');
+
+  if (musicPlaying) {
+    bgMusic.pause();
+    btn.textContent = '🔇';
+    musicPlaying = false;
+  } else {
+    bgMusic.volume = 0.7;
+    bgMusic.play().then(() => {
+      btn.textContent = '🔊';
+      musicPlaying = true;
+    }).catch(e => {
+      console.log('Music error:', e);
+      alert('Tap START button first to enable music!');
+    });
+  }
 }
 
-function drawStones(){
-stones=stones.filter(s=>{s.y+=s.v;s.rot+=s.rotSpeed;
-ctx.save();ctx.translate(s.x+s.w/2,s.y+s.h/2);ctx.rotate(s.rot);
-ctx.shadowBlur=20;ctx.shadowColor='#888';ctx.fillStyle='#666';ctx.strokeStyle='#444';ctx.lineWidth=3;
-// Draw rock shape
-ctx.beginPath();ctx.moveTo(-s.w/2,0);ctx.lineTo(-s.w/3,-s.h/2);ctx.lineTo(s.w/3,-s.h/2);ctx.lineTo(s.w/2,0);ctx.lineTo(s.w/3,s.h/2);ctx.lineTo(-s.w/3,s.h/2);ctx.closePath();
-ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.restore();
-if(s.x<player.x+player.w&&s.x+s.w>player.x&&s.y<player.y+player.h&&s.y+s.h>player.y){playSound('hitSound');endGame(false);return false}
-return s.y<c.height+50});
+let gameRunning = false;
+let timeLeft = 60;
+let timerInterval = null;
+let hits = 0;
+let bottles = [];
+let particles = [];
+let laserBeams = [];
+
+function updateTimer() {
+  timeLeft--;
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  document.getElementById('timeLeft').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  if (timeLeft <= 0) {
+    endGame('time');
+  }
 }
 
-function drawRain(){
-rain.forEach(r=>{r.y+=r.v;if(r.y>c.height){r.y=-20;r.x=Math.random()*c.width}
-ctx.strokeStyle=storm?'rgba(100,150,255,0.6)':'rgba(100,150,255,0.3)';
-ctx.lineWidth=storm?2:1;ctx.beginPath();ctx.moveTo(r.x,r.y);ctx.lineTo(r.x-storm?3:1,r.y+r.len);ctx.stroke()});
+function updateDisplay() {
+  const remaining = Math.max(0, TARGET_GOAL - hits);
+  document.getElementById('targetsLeft').textContent = remaining;
+  document.getElementById('hitsCount').textContent = `${hits}/${TARGET_GOAL}`;
 }
 
-function drawParticles(){
-particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;p.vy+=0.4;
-ctx.fillStyle=p.color;ctx.globalAlpha=p.life/40;ctx.shadowBlur=15;ctx.shadowColor=p.color;
-ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;
-return p.life>0});
+function createBottle() {
+  return {
+    x: Math.random() * (canvas.width - 60) + 30,
+    y: Math.random() * 200 + 50,
+    width: 35,
+    height: 60,
+    vx: (Math.random() - 0.5) * 3,
+    vy: Math.random() * 1 + 0.5,
+    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+    rotation: Math.random() * 0.1 - 0.05,
+    rotSpeed: (Math.random() - 0.5) * 0.05,
+    glowPhase: Math.random() * Math.PI * 2
+  };
 }
 
-function drawBG(){
-ctx.fillStyle=storm?'#110022':'#000';ctx.fillRect(0,0,c.width,c.height);
-for(let i=0;i<8;i++){for(let j=0;j<12;j++){const pulse=Math.sin(Date.now()/(storm?50:200)+i+j)*0.2+0.8;
-const hue=((i+j)*50+Date.now()/(storm?15:40))%360;
-ctx.fillStyle=`hsla(${hue},100%,50%,${pulse*0.15*storm?2:1})`;ctx.fillRect(i*45,j*40,45,40)}}
+function startGame() {
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'block';
+  crosshair.style.display = 'block';
+
+  // Force music to play on start
+  const bgMusic = document.getElementById('bgMusic');
+  bgMusic.volume = 0.7;
+  bgMusic.play().then(() => {
+    musicPlaying = true;
+    document.getElementById('musicBtn').textContent = '🔊';
+  }).catch(e => console.log('Music start error:', e));
+
+  hits = 0;
+  timeLeft = 60;
+  bottles = [];
+  particles = [];
+  laserBeams = [];
+
+  for(let i = 0; i < 5; i++) {
+    bottles.push(createBottle());
+  }
+
+  updateDisplay();
+  document.getElementById('timeLeft').textContent = '1:00';
+  gameRunning = true;
+  timerInterval = setInterval(updateTimer, 1000);
+  gameLoop();
 }
 
-function gameLoop(){
-if(!running)return;
-ctx.clearRect(0,0,c.width,c.height);drawBG();drawRain();drawPlayer();drawStones();drawParticles();
-requestAnimationFrame(gameLoop);
+function createShatter(x, y, color) {
+  for(let i = 0; i < 25; i++) {
+    particles.push({
+      x: x,
+      y: y,
+      vx: (Math.random() - 0.5) * 12,
+      vy: (Math.random() - 0.5) * 12,
+      life: 40,
+      color: color,
+      size: Math.random() * 5 + 2
+    });
+  }
 }
 
-c.addEventListener('touchmove',e=>{e.preventDefault();if(!running)return;const r=c.getBoundingClientRect();player.x=Math.max(0,Math.min(c.width-player.w,e.touches[0].clientX-r.left-player.w/2))});
-c.addEventListener('mousemove',e=>{if(!running)return;const r=c.getBoundingClientRect();player.x=Math.max(0,Math.min(c.width-player.w,e.clientX-r.left-player.w/2))});
+function drawBottles() {
+  bottles.forEach(bottle => {
+    bottle.glowPhase += 0.1;
+    const glow = Math.sin(bottle.glowPhase) * 0.3 + 0.7;
 
-function resetGame(){document.getElementById('gameOver').style.display='none';clearInterval(timer);startGame()}
-function endGame(win){
-running=false;clearInterval(timer);document.getElementById('bgMusic').pause();
-if(win){playSound('winSound');addCoins(10);document.getElementById('overTitle').textContent='GOD MODE!';document.getElementById('earned').textContent='10';document.getElementById('overMsg').textContent='2 minutes survived!'}
-else{document.getElementById('overTitle').textContent='CRUSHED!';document.getElementById('earned').textContent='0';document.getElementById('overMsg').textContent=`Hit by stone at ${120-time}s!`}
-document.getElementById('gameOver').style.display='flex';
+    ctx.save();
+    ctx.translate(bottle.x + bottle.width/2, bottle.y + bottle.height/2);
+    ctx.rotate(bottle.rotation);
+
+    // Glow
+    ctx.shadowBlur = 25 * glow;
+    ctx.shadowColor = bottle.color;
+
+    // Bottle body
+    ctx.fillStyle = bottle.color;
+    ctx.fillRect(-bottle.width/2, -bottle.height/2, bottle.width, bottle.height);
+
+    // Bottle neck
+    ctx.fillRect(-bottle.width/4, -bottle.height/2 - 15, bottle.width/2, 15);
+
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillRect(-bottle.width/2 + 5, -bottle.height/2, 8, bottle.height);
+
+    ctx.restore();
+  });
+}
+
+function drawParticles() {
+  particles = particles.filter(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+    p.vy += 0.4;
+
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.life / 40;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
+    return p.life > 0;
+  });
+}
+
+function drawLasers() {
+  laserBeams = laserBeams.filter(beam => {
+    beam.life--;
+    ctx.strokeStyle = `rgba(0,255,255,${beam.life / 10})`;
+    ctx.lineWidth = 4;
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#00ffff';
+    ctx.beginPath();
+    ctx.moveTo(beam.x1, beam.y1);
+    ctx.lineTo(beam.x2, beam.y2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    return beam.life > 0;
+  });
+}
+
+function updateBottles() {
+  bottles.forEach(bottle => {
+    bottle.x += bottle.vx;
+    bottle.y += bottle.vy;
+    bottle.rotation += bottle.rotSpeed;
+
+    if (bottle.x <= 0 || bottle.x >= canvas.width - bottle.width) {
+      bottle.vx *= -1;
+    }
+    if (bottle.y <= 0 || bottle.y >= canvas.height - bottle.height) {
+      bottle.vy *= -1;
+    }
+  });
+}
+
+function drawBackground() {
+  // Disco floor tiles
+  for(let i = 0; i < 8; i++) {
+    for(let j = 0; j < 10; j++) {
+      const pulse = Math.sin(Date.now()/300 + i + j) * 0.15 + 0.85;
+      const hue = (i + j) * 30 + Date.now()/50;
+      ctx.fillStyle = `hsla(${hue % 360}, 100%, 50%, ${pulse * 0.3})`;
+      ctx.fillRect(i * 47.5, j * 50, 47.5, 50);
+    }
+  }
+
+  // Neon grid
+  ctx.strokeStyle = 'rgba(255,0,128,0.3)';
+  ctx.lineWidth = 2;
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = '#ff0080';
+  for(let i = 0; i < canvas.width; i += 40) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i, canvas.height);
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 0;
+}
+
+function gameLoop() {
+  if (!gameRunning) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();
+  updateBottles();
+  drawBottles();
+  drawParticles();
+  drawLasers();
+
+  requestAnimationFrame(gameLoop);
+}
+
+function shoot(x, y) {
+  if (!gameRunning) return;
+
+  playSound('shootSound');
+
+  // Laser beam effect
+  laserBeams.push({
+    x1: canvas.width / 2,
+    y1: canvas.height,
+    x2: x,
+    y2: y,
+    life: 10
+  });
+
+  // Check hit
+  bottles = bottles.filter(bottle => {
+    if (x >= bottle.x && x <= bottle.x + bottle.width &&
+        y >= bottle.y && y <= bottle.y + bottle.height) {
+      hits++;
+      playSound('breakSound');
+      createShatter(bottle.x + bottle.width/2, bottle.y + bottle.height/2, bottle.color);
+      updateDisplay();
+
+      if (hits >= TARGET_GOAL) {
+        endGame('win');
+      }
+      return false;
+    }
+    return true;
+  });
+}
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (!gameRunning) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.touches[0].clientX - rect.left;
+  const y = e.touches[0].clientY - rect.top;
+  shoot(x, y);
+});
+
+canvas.addEventListener('mousedown', (e) => {
+  if (!gameRunning) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  shoot(x, y);
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  crosshair.style.left = (e.clientX - 15) + 'px';
+  crosshair.style.top = (e.clientY - 15) + 'px';
+});
+
+function resetGame() {
+  document.getElementById('gameOver').style.display = 'none';
+  clearInterval(timerInterval);
+  startGame();
+}
+
+function endGame(reason) {
+  gameRunning = false;
+  clearInterval(timerInterval);
+  crosshair.style.display = 'none';
+
+  if (hits >= TARGET_GOAL) {
+    playSound('winSound');
+    addCoins(10);
+    document.getElementById('gameOverTitle').textContent = 'SMASHED IT!';
+    document.getElementById('earnedCoins').textContent = '10';
+    document.getElementById('finalMessage').textContent = `${hits} BOTTLES DESTROYED!`;
+  } else {
+    document.getElementById('gameOverTitle').textContent = "TIME'S UP!";
+    document.getElementById('earnedCoins').textContent = '0';
+    document.getElementById('finalMessage').textContent = `Only ${hits}/${TARGET_GOAL} - NEED ${TARGET_GOAL} TO WIN`;
+  }
+
+  document.getElementById('finalStats').textContent = `Total Hits: ${hits}`;
+  document.getElementById('gameOver').style.display = 'flex';
 }
 </script>
 </body>
