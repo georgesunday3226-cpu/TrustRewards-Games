@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Jump</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(180deg, #1a1a2e, #0f0f1e);
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+  .game-container { text-align: center; }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            color: #00ff88;
+            text-shadow: 0 0 15px #00ff88;
+        }
+  .win-condition {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+  .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 350px;
+            margin: 10px auto;
+            font-weight: bold;
+            background: rgba(0,0,0,0.4);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        #gameCanvas {
+            width: 350px;
+            height: 550px;
+            background: linear-gradient(180deg, #0f0f3e, #1a1a5e);
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin: 10px auto;
+            box-shadow: 0 0 30px #00ff88;
+        }
+        #player {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #00ff88;
+            border-radius: 50%;
+            left: 160px;
+            box-shadow: 0 0 20px #00ff88;
+            z-index: 10;
+            transition: transform 0.1s;
+        }
+  .platform {
+            position: absolute;
+            height: 15px;
+            background: linear-gradient(90deg, #6a5acd, #483d8b);
+            border-radius: 8px;
+            box-shadow: 0 3px #2e2556;
+        }
+  .platform-moving {
+            background: linear-gradient(90deg, #ff0040, #8B0000);
+            box-shadow: 0 0 10px #ff0040;
+        }
+  .platform-small {
+            background: linear-gradient(90deg, #ff8c00, #ff4500);
+            box-shadow: 0 0 10px #ff8c00;
+        }
+  .platform-deadly {
+            background: linear-gradient(90deg, #8B008B, #4B0082);
+            box-shadow: 0 0 15px #8B008B;
+        }
+  .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #00ff88;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        #tapToStart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #00ff88;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff88;
+            z-index: 50;
+        }
+  .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+  .controls button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background: #6a5acd;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+        }
+        #gameOver {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+        }
+  .gameOverBox {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #00ff88;
+            box-shadow: 0 0 40px #00ff88;
+        }
+        #gameOverTitle {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+        #finalFloor {
+            font-size: 28px;
+            color: #ffd700;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+  .gameOverBtn {
+            padding: 15px 40px;
+            font-size: 18px;
+            background: #00ff88;
+            border: none;
+            border-radius: 10px;
+            color: #0a0a1a;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>TOWER JUMP</h1>
+        <div class="win-condition">REACH FLOOR 100 = WIN 15 COINS</div>
+        <div class="stats">
+            <div>FLOOR: <span id="floor">0</span></div>
+            <div>BEST: <span id="best">0</span></div>
+            <div>🔊 <span id="soundStatus">TAP TO ENABLE</span></div>
+        </div>
+        
+        <div id="gameCanvas">
+            <div id="player"></div>
+            <div id="tapToStart">TAP TO JUMP</div>
+        </div>
+        
+        <div class="controls">
+            <button id="musicBtn">MUSIC: ON</button>
+            <button id="restartBtn">RESTART</button>
+        </div>
+    </div>
+
+    <div id="gameOver">
+        <div class="gameOverBox">
+            <h2 id="gameOverTitle">YOU WIN!</h2>
+            <p id="finalMessage">Reached Floor 100!</p>
+            <p id="finalFloor">Coins: 15</p>
+            <button class="gameOverBtn" onclick="location.reload()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <!-- SOUNDS -->
+    <audio id="bgMusic" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="jumpSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-quick-jump-arcade-game-239.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="landSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-completion-of-a-level-2063.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="fallSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const player = document.getElementById('player');
+        const floorEl = document.getElementById('floor');
+        const bestEl = document.getElementById('best');
+        const tapToStart = document.getElementById('tapToStart');
+        const soundStatus = document.getElementById('soundStatus');
+        const musicBtn = document.getElementById('musicBtn');
+        
+        const bgMusic = document.getElementById('bgMusic');
+        const jumpSound = document.getElementById('jumpSound');
+        const landSound = document.getElementById('landSound');
+        const winSound = document.getElementById('winSound');
+        const fallSound = document.getElementById('fallSound');
+
+        let playerY = 470;
+        let playerX = 160;
+        let velocityY = 0;
+        let gravity = 0.7; // HARDER
+        let jumpPower = -13;
+        let floor = 0;
+        let platforms = [];
+        let gameRunning = false;
+        let gameStarted = false;
+        let musicOn = true;
+        let soundEnabled = false;
+        let cameraY = 0;
+        let particles = [];
+
+        let bestFloor = localStorage.getItem('towerJumpBest') || 0;
+        bestEl.textContent = bestFloor;
+
+        bgMusic.volume = 0.2;
+
+        function enableSound() {
+            if (!soundEnabled) {
+                soundEnabled = true;
+                soundStatus.textContent = 'ON';
+                if (musicOn) bgMusic.play().catch(e => {});
+            }
+        }
+
+        function playSound(sound) {
+            if (!soundEnabled) return;
+            sound.currentTime = 0;
+            sound.play().catch(e => {});
+        }
+
+        function createPlatform(y, type = 'normal') {
+            const platform = document.createElement('div');
+            platform.classList.add('platform');
+            
+            let width, moving = false, speed = 0;
+            
+            if (type === 'moving') {
+                platform.classList.add('platform-moving');
+                width = 45; // VERY SMALL
+                moving = true;
+                speed = floor > 30? 3 : floor > 15? 2.5 : 2; // INSANE AFTER 30
+            } else if (type === 'small') {
+                platform.classList.add('platform-small');
+                width = 35; // TINY
+            } else if (type === 'deadly') {
+                platform.classList.add('platform-deadly');
+                width = 50;
+                platform.dataset.deadly = 'true';
+            } else {
+                width = Math.random() * 25 + 55; // 55-80px SMALL
+            }
+            
+            const x = Math.random() * (350 - width);
+            
+            platform.style.width = width + 'px';
+            platform.style.left = x + 'px';
+            canvas.appendChild(platform);
+            
+            platforms.push({
+                element: platform,
+                x: x,
+                y: y,
+                width: width,
+                moving: moving,
+                direction: 1,
+                speed: speed,
+                deadly: type === 'deadly'
+            });
+        }
+
+        function initPlatforms() {
+            createPlatform(500, 'normal');
+            
+            // FLOOR 100 = 110 platforms
+            for (let i = 1; i < 110; i++) {
+                let type = 'normal';
+                if (i > 10) {
+                    const rand = Math.random();
+                    if (i > 50 && rand > 0.85) type = 'deadly'; // Deadly platforms after 50
+                    else if (rand > 0.5) type = 'moving'; // 50% moving
+                    else if (rand > 0.3) type = 'small'; // 20% small
+                }
+                createPlatform(500 - i * 60, type); // TIGHTER GAPS
+            }
+        }
+
+        function movePlatforms() {
+            platforms.forEach(p => {
+                if (p.moving) {
+                    p.x += p.speed * p.direction;
+                    if (p.x <= 0 || p.x + p.width >= 350) {
+                        p.direction *= -1;
+                    }
+                    p.element.style.left = p.x + 'px';
+                }
+            });
+        }
+
+        function jump() {
+            if (!gameStarted) {
+                gameStarted = true;
+                gameRunning = true;
+                tapToStart.style.display = 'none';
+                enableSound();
+            }
+            
+            if (!gameRunning) return;
+            
+            velocityY = jumpPower;
+            playSound(jumpSound);
+            
+            for (let i = 0; i < 5; i++) {
+                createParticle(playerX + 15, playerY + 30);
+            }
+            
+            player.style.transform = 'scale(0.8)';
+            setTimeout(() => player.style.transform = 'scale(1)', 100);
+        }
+
+        function createParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            canvas.appendChild(particle);
+            
+            particles.push({
+                element: particle,
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 4,
+                vy: Math.random() * -3,
+                life: 30
+            });
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2;
+                p.life--;
+                
+                p.element.style.left = p.x + 'px';
+                p.element.style.top = (p.y + cameraY) + 'px';
+                p.element.style.opacity = p.life / 30;
+                
+                if (p.life <= 0) {
+                    p.element.remove();
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function checkCollision() {
+            if (velocityY > 0) {
+                for (let p of platforms) {
+                    if (playerX + 30 > p.x && 
+                        playerX < p.x + p.width && 
+                        playerY + 30 > p.y && 
+                        playerY + 30 < p.y + 20) {
+                        
+                        if (p.deadly) {
+                            gameOver(); // TOUCH PURPLE = DIE
+                            return;
+                        }
+                        
+                        playerY = p.y - 30;
+                        velocityY = jumpPower;
+                        playSound(landSound);
+                        
+                        const newFloor = Math.floor((500 - p.y) / 60);
+                        if (newFloor > floor) {
+                            floor = newFloor;
+                            floorEl.textContent = floor;
+                            
+                            if (floor >= 100) {
+                                winGame();
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+
+        function updateCamera() {
+            if (playerY < 300) {
+                cameraY = 300 - playerY;
+            }
+            
+            player.style.top = (playerY + cameraY) + 'px';
+            
+            platforms.forEach(p => {
+                p.element.style.top = (p.y + cameraY) + 'px';
+            });
+            
+            if (platforms[platforms.length - 1].y + cameraY > -100) {
+                let type = 'normal';
+                const rand = Math.random();
+                if (floor > 30) {
+                    if (rand > 0.8) type = 'deadly';
+                    else if (rand > 0.4) type = 'moving';
+                    else if (rand > 0.2) type = 'small';
+                } else if (floor > 15) {
+                    if (rand > 0.5) type = 'moving';
+                    else if (rand > 0.3) type = 'small';
+                }
+                createPlatform(platforms[platforms.length - 1].y - 60, type);
+            }
+            
+            platforms = platforms.filter(p => {
+                if (p.y + cameraY > 600) {
+                    p.element.remove();
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        function winGame() {
+            gameRunning = false;
+            bgMusic.pause();
+            playSound(winSound);
+            
+            document.getElementById('gameOverTitle').textContent = 'YOU WIN!';
+            document.getElementById('finalMessage').textContent = 'Reached Floor 100!';
+            document.getElementById('finalFloor').textContent = 'Coins: 15';
+            
+            // CLAIM 15 COINS TO KODULAR
+            if (window.AppInventor) {
+                window.AppInventor.setWebViewString("CLAIM:BRICK:15");
+            }
+            
+            if (floor > bestFloor) {
+                bestFloor = floor;
+                localStorage.setItem('towerJumpBest', bestFloor);
+                bestEl.textContent = bestFloor;
+            }
+            
+            document.getElementById('gameOver').style.display = 'flex';
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            bgMusic.pause();
+            playSound(fallSound);
+            
+            document.getElementById('gameOverTitle').textContent = 'FALL DOWN!';
+            document.getElementById('finalMessage').textContent = `Reached Floor ${floor}`;
+            document.getElementById('finalFloor').textContent = 'Coins: 0';
+            
+            if (floor > bestFloor) {
+                bestFloor = floor;
+                localStorage.setItem('towerJumpBest', bestFloor);
+                bestEl.textContent = bestFloor;
+            }
+            
+            document.getElementById('gameOver').style.display = 'flex';
+        }
+
+        function gameLoop() {
+            if (gameRunning) {
+                velocityY += gravity;
+                playerY += velocityY;
+                
+                checkCollision();
+                movePlatforms();
+                updateCamera();
+                updateParticles();
+                
+                if (playerY > 550) {
+                    gameOver();
+                }
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        function toggleMusic() {
+            musicOn =!musicOn;
+            if (musicOn) {
+                if (soundEnabled) bgMusic.play();
+                musicBtn.textContent = 'MUSIC: ON';
+            } else {
+                bgMusic.pause();
+                musicBtn.textContent = 'MUSIC: OFF';
+            }
+        }
+
+        // Controls
+        canvas.addEventListener('click', jump);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            jump();
+        });
+        
+        musicBtn.addEventListener('click', toggleMusic);
+        document.getElementById('restartBtn').addEventListener('click', () => location.reload());
+
+        // Start
+        initPlatforms();
+        updateCamera();
+        gameLoop();
+    </script>
+</body>
+</html>

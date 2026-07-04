@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avoid Wahala</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+    .game-container { text-align: center; }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 0 0 10px #00ff88;
+        }
+    .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 300px;
+            margin: 10px auto;
+            font-weight: bold;
+        }
+        #gameArea {
+            width: 300px;
+            height: 500px;
+            background: #111132;
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin: 10px auto;
+            box-shadow: 0 0 20px #00ff88;
+        }
+        #player {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #00ff88;
+            border-radius: 50%;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 15px #00ff88;
+            z-index: 10;
+        }
+    .obstacle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #ff0040;
+            border-radius: 5px;
+            box-shadow: 0 0 15px #ff0040;
+        }
+    .controls { margin-top: 15px; }
+    .controls button {
+            width: 100px;
+            height: 60px;
+            font-size: 24px;
+            margin: 0 10px;
+            background: #6a5acd;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 4px #483d8b;
+        }
+    .controls button:active {
+            box-shadow: 0 2px #483d8b;
+            transform: translateY(2px);
+        }
+        #gameOver {
+            color: #ff0040;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+            height: 60px;
+        }
+        #restartBtn, #claimBtn {
+            padding: 12px 30px;
+            font-size: 18px;
+            background: #00ff88;
+            border: none;
+            border-radius: 8px;
+            color: #0a0a1a;
+            font-weight: bold;
+            display: none;
+            margin: 5px auto;
+        }
+        #winText {
+            color: #00ff88;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>AVOID WAHALA</h1>
+        <div class="stats">
+            <div>SCORE: <span id="score">0</span></div>
+            <div>LEVEL: <span id="level">1</span></div>
+            <div>COINS: <span id="coins">0</span></div>
+        </div>
+        <div class="stats">
+            <div>BEST: <span id="highScore">0</span></div>
+            <div>TARGET: LEVEL 4</div>
+        </div>
+        
+        <div id="gameArea">
+            <div id="player"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="leftBtn">◀</button>
+            <button id="rightBtn">▶</button>
+        </div>
+        
+        <p id="gameOver"></p>
+        <button id="claimBtn">CLAIM 15 COINS</button>
+        <button id="restartBtn">PLAY AGAIN</button>
+    </div>
+
+    <!-- Sound Effects -->
+    <audio id="moveSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="scoreSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="levelUpSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="coinSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-coin-win-notification-1992.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="gameOverSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-completion-of-a-level-2063.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const gameArea = document.getElementById('gameArea');
+        const player = document.getElementById('player');
+        const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
+        const coinsDisplay = document.getElementById('coins');
+        const highScoreDisplay = document.getElementById('highScore');
+        const gameOverText = document.getElementById('gameOver');
+        const restartBtn = document.getElementById('restartBtn');
+        const claimBtn = document.getElementById('claimBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        
+        const moveSound = document.getElementById('moveSound');
+        const scoreSound = document.getElementById('scoreSound');
+        const levelUpSound = document.getElementById('levelUpSound');
+        const coinSound = document.getElementById('coinSound');
+        const gameOverSound = document.getElementById('gameOverSound');
+        const winSound = document.getElementById('winSound');
+
+        let playerPos = 135;
+        let score = 0;
+        let level = 1;
+        let coins = 0;
+        let obstacleSpeed = 2;
+        let obstacleInterval = 1400;
+        let gameRunning = true;
+        let gameWon = false;
+        let obstacles = [];
+        let spawnTimer;
+
+        let highScore = localStorage.getItem('avoidWahalaBest') || 0;
+        highScoreDisplay.textContent = highScore;
+        
+        let savedCoins = localStorage.getItem('avoidWahalaCoins') || 0;
+        coins = parseInt(savedCoins);
+        coinsDisplay.textContent = coins;
+
+        function playSound(sound) {
+            sound.currentTime = 0;
+            sound.play().catch(e => {});
+        }
+
+        function updateLevel() {
+            // LEVEL 1: 0-4 SLOW
+            // LEVEL 2: 5-14 FAST 
+            // LEVEL 3: 15-29 RUSHING
+            // LEVEL 4: 30+ WIN
+            
+            if (score >= 5 && level === 1) {
+                level = 2;
+                obstacleSpeed = 4;
+                clearInterval(spawnTimer);
+                obstacleInterval = 900;
+                spawnTimer = setInterval(createObstacle, obstacleInterval);
+                playSound(levelUpSound);
+            } 
+            else if (score >= 15 && level === 2) {
+                level = 3;
+                obstacleSpeed = 7; // RUSHING
+                clearInterval(spawnTimer);
+                obstacleInterval = 500;
+                spawnTimer = setInterval(createObstacle, obstacleInterval);
+                playSound(levelUpSound);
+            }
+            else if (score >= 30 && level === 3) {
+                level = 4;
+                obstacleSpeed = 10; // EXTREME
+                clearInterval(spawnTimer);
+                obstacleInterval = 400;
+                spawnTimer = setInterval(createObstacle, obstacleInterval);
+                playSound(levelUpSound);
+                winGame();
+            }
+            levelDisplay.textContent = level;
+        }
+
+        function winGame() {
+            gameRunning = false;
+            gameWon = true;
+            clearInterval(spawnTimer);
+            playSound(winSound);
+            addCoins(10);
+            
+            gameOverText.innerHTML = `<span id="winText">YOU WIN!<br>Reached Level 4<br>Claim 15 Coins!</span>`;
+            claimBtn.style.display = 'inline-block';
+            restartBtn.style.display = 'inline-block';
+            
+            // Send claim to Kodular
+            if (window.AppInventor) {
+                window.AppInventor.setWebViewString("CLAIM:BRICK:15");
+            }
+        }
+
+        function addCoins(amount) {
+            coins += amount;
+            coinsDisplay.textContent = coins;
+            localStorage.setItem('avoidWahalaCoins', coins);
+            playSound(coinSound);
+        }
+
+        function movePlayer(direction) {
+            if (!gameRunning) return;
+            playSound(moveSound);
+            if (direction === 'left' && playerPos > 0) {
+                playerPos -= 30;
+            }
+            if (direction === 'right' && playerPos < 270) {
+                playerPos += 30;
+            }
+            player.style.left = playerPos + 'px';
+        }
+
+        function createObstacle() {
+            if (!gameRunning) return;
+            
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            obstacle.style.left = Math.floor(Math.random() * 9) * 30 + 'px';
+            obstacle.style.top = '-30px';
+            gameArea.appendChild(obstacle);
+            obstacles.push(obstacle);
+        }
+
+        function moveObstacles() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obstacle = obstacles[i];
+                let top = parseInt(obstacle.style.top) || 0;
+                top += obstacleSpeed;
+                obstacle.style.top = top + 'px';
+                
+                let obsLeft = parseInt(obstacle.style.left);
+                let obsTop = top;
+                
+                if (
+                    obsLeft < playerPos + 30 &&
+                    obsLeft + 30 > playerPos &&
+                    obsTop < 450 + 30 &&
+                    obsTop + 30 > 450
+                ) {
+                    gameOver();
+                    return;
+                }
+                
+                if (top > 500) {
+                    obstacle.remove();
+                    obstacles.splice(i, 1);
+                    score++;
+                    scoreDisplay.textContent = score;
+                    playSound(scoreSound);
+                    updateLevel();
+                }
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(spawnTimer);
+            playSound(gameOverSound);
+            
+            gameOverText.innerHTML = `GAME OVER!<br>Reached Level ${level}<br>Score: ${score}`;
+            restartBtn.style.display = 'inline-block';
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('avoidWahalaBest', highScore);
+                highScoreDisplay.textContent = highScore;
+            }
+        }
+
+        function startGame() {
+            gameRunning = true;
+            gameWon = false;
+            score = 0;
+            level = 1;
+            obstacleSpeed = 2;
+            obstacleInterval = 1400;
+            playerPos = 135;
+            
+            scoreDisplay.textContent = score;
+            levelDisplay.textContent = level;
+            gameOverText.textContent = '';
+            restartBtn.style.display = 'none';
+            claimBtn.style.display = 'none';
+            player.style.left = playerPos + 'px';
+            
+            obstacles.forEach(obs => obs.remove());
+            obstacles = [];
+            
+            clearInterval(spawnTimer);
+            spawnTimer = setInterval(createObstacle, obstacleInterval);
+        }
+
+        function claimCoins() {
+            if (window.AppInventor) {
+                window.AppInventor.setWebViewString("CLAIM:BRICK:15");
+                claimBtn.textContent = 'CLAIMED!';
+                claimBtn.disabled = true;
+                playSound(coinSound);
+            }
+        }
+
+        function gameLoop() {
+            if (gameRunning) {
+                moveObstacles();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Controls
+        leftBtn.addEventListener('click', () => movePlayer('left'));
+        rightBtn.addEventListener('click', () => movePlayer('right'));
+        restartBtn.addEventListener('click', startGame);
+        claimBtn.addEventListener('click', claimCoins);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') movePlayer('left');
+            if (e.key === 'ArrowRight') movePlayer('right');
+        });
+
+        // Start
+        startGame();
+        gameLoop();
+    </script>
+</body>
+</html>

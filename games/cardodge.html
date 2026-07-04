@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Dodge</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(180deg, #0a0a1a, #1a1a3a);
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+.game-container { text-align: center; }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            color: #ff8c00;
+            text-shadow: 0 0 15px #ff8c00;
+        }
+.win-condition {
+            color: #00ff88;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+.stats {
+            display: flex;
+            justify-content: space-around;
+            width: 350px;
+            margin: 10px auto;
+            font-weight: bold;
+            background: rgba(0,0,0,0.4);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        #timer {
+            color: #ff8c00;
+            font-size: 18px;
+        }
+        #timer.hard {
+            color: #ff0040;
+            animation: pulse 0.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        #gameCanvas {
+            width: 350px;
+            height: 550px;
+            background: #2a2a2a;
+            border: 3px solid #ff8c00;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin: 10px auto;
+            box-shadow: 0 0 30px #ff8c00;
+        }
+        #road {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                #333 0px,
+                #333 40px,
+                #444 40px,
+                #444 80px
+            );
+        }
+.lane {
+            position: absolute;
+            width: 4px;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                #ffff00 0px,
+                #ffff00 20px,
+                transparent 20px,
+                transparent 40px
+            );
+            left: 116px;
+        }
+.lane2 { left: 232px; }
+        #playerCar {
+            position: absolute;
+            width: 40px;
+            height: 70px;
+            background: linear-gradient(180deg, #00ff88, #008844);
+            border-radius: 8px;
+            bottom: 20px;
+            left: 155px;
+            box-shadow: 0 0 20px #00ff88;
+            z-index: 10;
+            transition: left 0.1s;
+        }
+        #playerCar::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            background: rgba(0,255,136,0.3);
+            top: 10px;
+            left: 5px;
+            border-radius: 4px;
+        }
+.enemyCar {
+            position: absolute;
+            width: 40px;
+            height: 70px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px;
+        }
+.car-red { background: linear-gradient(180deg, #ff0040, #8B0000); box-shadow: 0 0 15px #ff0040; }
+.car-blue { background: linear-gradient(180deg, #0080ff, #004080); box-shadow: 0 0 15px #0080ff; }
+.car-yellow { background: linear-gradient(180deg, #ffd700, #ff8c00); box-shadow: 0 0 15px #ffd700; }
+.car-purple { background: linear-gradient(180deg, #8B008B, #4B0082); box-shadow: 0 0 15px #8B008B; }
+        #tapToStart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #ff8c00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff8c00;
+            z-index: 50;
+        }
+.controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+.controls button {
+            padding: 15px 35px;
+            font-size: 24px;
+            background: #6a5acd;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+        }
+        #gameOver {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+        }
+.gameOverBox {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #ff8c00;
+            box-shadow: 0 0 40px #ff8c00;
+        }
+        #gameOverTitle {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #ff8c00;
+        }
+        #finalTime {
+            font-size: 28px;
+            color: #00ff88;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+.gameOverBtn {
+            padding: 15px 40px;
+            font-size: 18px;
+            background: #ff8c00;
+            border: none;
+            border-radius: 10px;
+            color: #0a0a1a;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>CAR DODGE</h1>
+        <div class="win-condition">SURVIVE 90 SECONDS = WIN 10 COINS</div>
+        <div class="stats">
+            <div>TIME: <span id="timer">90</span>s</div>
+            <div>SCORE: <span id="score">0</span></div>
+            <div>🔊 <span id="soundStatus">TAP</span></div>
+        </div>
+        
+        <div id="gameCanvas">
+            <div id="road">
+                <div class="lane"></div>
+                <div class="lane lane2"></div>
+            </div>
+            <div id="playerCar"></div>
+            <div id="tapToStart">TAP TO START</div>
+        </div>
+        
+        <div class="controls">
+            <button id="leftBtn">◀</button>
+            <button id="rightBtn">▶</button>
+        </div>
+    </div>
+
+    <div id="gameOver">
+        <div class="gameOverBox">
+            <h2 id="gameOverTitle">YOU WIN!</h2>
+            <p id="finalMessage">Survived 90 seconds!</p>
+            <p id="finalTime">Coins: 10</p>
+            <button class="gameOverBtn" onclick="location.reload()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <!-- SOUNDS -->
+    <audio id="bgMusic" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="engineSound" loop>
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-car-engine-loop-1535.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="crashSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-car-crash-with-explosion-1619.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-completion-of-a-level-2063.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="scoreSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const playerCar = document.getElementById('playerCar');
+        const timeEl = document.getElementById('timer');
+        const scoreEl = document.getElementById('score');
+        const tapToStart = document.getElementById('tapToStart');
+        const soundStatus = document.getElementById('soundStatus');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        
+        const bgMusic = document.getElementById('bgMusic');
+        const engineSound = document.getElementById('engineSound');
+        const crashSound = document.getElementById('crashSound');
+        const winSound = document.getElementById('winSound');
+        const scoreSound = document.getElementById('scoreSound');
+
+        let playerLane = 1;
+        let lanes = [38, 155, 272];
+        let timeLeft = 90; // 1 MIN 30 SEC
+        let score = 0;
+        let enemyCars = [];
+        let gameRunning = false;
+        let gameStarted = false;
+        let soundEnabled = false;
+        let spawnRate = 1200; // 0-60s: FAST SMALL
+        let carSpeed = 4;
+        let gameTimer;
+        let spawnTimer;
+        let roadOffset = 0;
+        let hardMode = false;
+
+        bgMusic.volume = 0.15;
+        engineSound.volume = 0.3;
+
+        function enableSound() {
+            if (!soundEnabled) {
+                soundEnabled = true;
+                soundStatus.textContent = 'ON';
+                if (bgMusic.paused) bgMusic.play().catch(e => {});
+                if (engineSound.paused) engineSound.play().catch(e => {});
+            }
+        }
+
+        function playSound(sound) {
+            if (!soundEnabled) return;
+            sound.currentTime = 0;
+            sound.play().catch(e => {});
+        }
+
+        function movePlayer(dir) {
+            if (!gameRunning) return;
+            if (dir === 'left' && playerLane > 0) {
+                playerLane--;
+                playerCar.style.left = lanes[playerLane] + 'px';
+            }
+            if (dir === 'right' && playerLane < 2) {
+                playerLane++;
+                playerCar.style.left = lanes[playerLane] + 'px';
+            }
+        }
+
+        function createEnemyCar() {
+            if (!gameRunning) return;
+            
+            const car = document.createElement('div');
+            car.classList.add('enemyCar');
+            
+            const colors = hardMode? ['car-red', 'car-blue', 'car-yellow', 'car-purple'] : ['car-red', 'car-blue', 'car-yellow'];
+            car.classList.add(colors[Math.floor(Math.random() * colors.length)]);
+            
+            const lane = Math.floor(Math.random() * 3);
+            car.style.left = lanes[lane] + 'px';
+            car.style.top = '-80px';
+            
+            // DIAGONAL IN HARD MODE
+            if (hardMode && Math.random() > 0.7) {
+                car.dataset.diagonal = Math.random() > 0.5? '1' : '-1';
+            }
+            
+            canvas.appendChild(car);
+            
+            enemyCars.push({
+                element: car,
+                x: lanes[lane],
+                y: -80,
+                lane: lane,
+                diagonal: parseInt(car.dataset.diagonal) || 0
+            });
+        }
+
+        function moveEnemyCars() {
+            for (let i = enemyCars.length - 1; i >= 0; i--) {
+                let car = enemyCars[i];
+                car.y += carSpeed;
+                car.x += car.diagonal * 1; // Diagonal movement
+                car.element.style.top = car.y + 'px';
+                car.element.style.left = car.x + 'px';
+                
+                // Check collision
+                const playerLeft = lanes[playerLane];
+                if (Math.abs(car.x - playerLeft) < 35 && car.y + 70 > 460 && car.y < 530) {
+                    crashGame();
+                    return;
+                }
+                
+                if (car.y > 550 &&!car.scored) {
+                    car.scored = true;
+                    score += 10;
+                    scoreEl.textContent = score;
+                    playSound(scoreSound);
+                }
+                
+                if (car.y > 600) {
+                    car.element.remove();
+                    enemyCars.splice(i, 1);
+                }
+            }
+        }
+
+        function animateRoad() {
+            roadOffset += carSpeed;
+            document.getElementById('road').style.backgroundPosition = `0px ${roadOffset}px`;
+        }
+
+        function startGame() {
+            if (!gameStarted) {
+                gameStarted = true;
+                gameRunning = true;
+                tapToStart.style.display = 'none';
+                enableSound();
+                
+                gameTimer = setInterval(() => {
+                    timeLeft--;
+                    timeEl.textContent = timeLeft;
+                    
+                    // 30s LEFT = HARD MODE
+                    if (timeLeft === 30) {
+                        hardMode = true;
+                        spawnRate = 800; // HARDER SMALL
+                        carSpeed = 6; // FASTER
+                        timeEl.classList.add('hard');
+                        clearInterval(spawnTimer);
+                        spawnTimer = setInterval(createEnemyCar, spawnRate);
+                    }
+                    
+                    if (timeLeft <= 0) {
+                        winGame();
+                    }
+                }, 1000);
+                
+                spawnTimer = setInterval(createEnemyCar, spawnRate);
+            }
+        }
+
+        function winGame() {
+            gameRunning = false;
+            clearInterval(gameTimer);
+            clearInterval(spawnTimer);
+            bgMusic.pause();
+            engineSound.pause();
+            playSound(winSound);
+            
+            document.getElementById('gameOverTitle').textContent = 'YOU WIN!';
+            document.getElementById('finalMessage').textContent = 'Survived 90 seconds!';
+            document.getElementById('finalTime').textContent = 'Coins: 10';
+            
+            if (window.AppInventor) {
+                window.AppInventor.setWebViewString("CLAIM:BRICK:10");
+            }
+            
+            document.getElementById('gameOver').style.display = 'flex';
+        }
+
+        function crashGame() {
+            gameRunning = false;
+            clearInterval(gameTimer);
+            clearInterval(spawnTimer);
+            bgMusic.pause();
+            engineSound.pause();
+            playSound(crashSound);
+            
+            document.getElementById('gameOverTitle').textContent = 'CRASHED!';
+            document.getElementById('finalMessage').textContent = `Survived ${90 - timeLeft} seconds`;
+            document.getElementById('finalTime').textContent = 'Coins: 0';
+            
+            document.getElementById('gameOver').style.display = 'flex';
+        }
+
+        function gameLoop() {
+            if (gameRunning) {
+                moveEnemyCars();
+                animateRoad();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Controls
+        canvas.addEventListener('click', startGame);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startGame();
+        });
+        
+        leftBtn.addEventListener('click', () => movePlayer('left'));
+        rightBtn.addEventListener('click', () => movePlayer('right'));
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') movePlayer('left');
+            if (e.key === 'ArrowRight') movePlayer('right');
+        });
+
+        // Start
+        gameLoop();
+    </script>
+</body>
+</html>
