@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Memory Match Pro - TrustRewards</title>
+<title>Archery Disco - TrustRewards</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background: linear-gradient(180deg, #1a0033 0%, #4B0082 50%, #8A2BE2 100%);
   font-family: 'Arial Black', sans-serif;
   display: flex;
   justify-content: center;
@@ -17,28 +17,18 @@ body {
   touch-action: manipulation;
 }
 #gameContainer {
-  background: linear-gradient(145deg, #1a1a2e, #16213e);
-  border-radius: 25px;
+  background: linear-gradient(145deg, #2d1b4e, #4a2c7a);
+  border-radius: 20px;
   padding: 15px;
-  box-shadow: 0 25px 80px rgba(0,0,0,0.9), inset 0 0 50px rgba(255,215,0,0.1);
-  border: 4px solid transparent;
-  background-clip: padding-box;
-  position: relative;
-  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(138,43,226,0.8), 0 0 40px rgba(255,0,255,0.4);
+  border: 4px solid #FF00FF;
+  max-width: 400px;
   width: 95%;
+  animation: discoGlow 2s infinite;
 }
-#gameContainer::before {
-  content: '';
-  position: absolute;
-  top: -4px; left: -4px; right: -4px; bottom: -4px;
-  background: linear-gradient(45deg, #FFD700, #FFA500, #FF6B6B, #667eea);
-  border-radius: 25px;
-  z-index: -1;
-  animation: borderGlow 3s linear infinite;
-}
-@keyframes borderGlow {
-  0%, 100% { filter: hue-rotate(0deg); }
-  50% { filter: hue-rotate(180deg); }
+@keyframes discoGlow {
+  0%, 100% { box-shadow: 0 20px 60px rgba(138,43,226,0.8), 0 0 40px rgba(255,0,255,0.4); }
+  50% { box-shadow: 0 20px 60px rgba(255,20,147,0.8), 0 0 40px rgba(0,255,255,0.4); }
 }
 #ui {
   display: grid;
@@ -46,84 +36,41 @@ body {
   gap: 8px;
   margin-bottom: 12px;
   padding: 12px;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  border-radius: 18px;
+  background: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
+  border-radius: 15px;
   color: #000;
   font-weight: 900;
-  box-shadow: 0 8px 25px rgba(255,215,0,0.6);
+  box-shadow: 0 5px 20px rgba(255,0,255,0.6);
 }
 #ui > div {
   text-align: center;
   font-size: 13px;
 }
-#coinsDisplay { font-weight: 900; }
 #timerDisplay {
   font-size: 17px;
   font-weight: 900;
-  color: #D50000;
-  text-shadow: 0 0 12px rgba(255,0,0,0.9);
+  color: #FF0000;
+  text-shadow: 0 0 10px rgba(255,0,0,0.8);
   animation: timerPulse 1s infinite;
 }
 @keyframes timerPulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.12); }
+  50% { transform: scale(1.1); }
 }
-#pairsDisplay { font-size: 13px; font-weight: 900; }
 #musicBtn {
   background: rgba(0,0,0,0.3);
   border: 2px solid #000;
   border-radius: 10px;
   font-size: 18px;
   cursor: pointer;
-  transition: all 0.3s;
 }
 #musicBtn:active { transform: scale(0.9); }
-#gameGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  padding: 10px;
-}
-.card {
-  aspect-ratio: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  cursor: pointer;
-  transition: transform 0.4s;
-  transform-style: preserve-3d;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-  position: relative;
-}
-.card:active { transform: scale(0.93); }
-.card.flipped {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  transform: rotateY(180deg);
-  box-shadow: 0 6px 25px rgba(255,215,0,0.7);
-}
-.card.matched {
-  background: linear-gradient(135deg, #00ff00 0%, #00aa00 100%);
-  cursor: default;
-  animation: matchPop 0.6s;
-  box-shadow: 0 6px 25px rgba(0,255,0,0.8);
-}
-@keyframes matchPop {
-  0% { transform: scale(1) rotateY(180deg); }
-  50% { transform: scale(1.25) rotateY(180deg); }
-  100% { transform: scale(1) rotateY(180deg); }
-}
-.card-content {
-  transform: rotateY(180deg);
-  backface-visibility: hidden;
-}
-.card-back {
-  position: absolute;
-  font-size: 26px;
-  color: white;
-  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+#gameCanvas {
+  display: block;
+  width: 100%;
+  background: linear-gradient(to bottom, #1a0033 0%, #4B0082 60%, #8A2BE2 100%);
+  border-radius: 15px;
+  box-shadow: inset 0 0 30px rgba(255,0,255,0.3);
 }
 #gameOver {
   display: none;
@@ -138,28 +85,28 @@ body {
   color: white;
 }
 #gameOver h1 {
-  font-size: 46px;
+  font-size: 42px;
   margin-bottom: 20px;
-  text-shadow: 0 0 40px #FFD700;
-  animation: winPulse 1s infinite;
+  text-shadow: 0 0 30px #FF00FF;
+  animation: pulse 1s infinite;
 }
-@keyframes winPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 #gameOver button {
   padding: 18px 45px;
   font-size: 22px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
   border: none;
   border-radius: 15px;
-  color: white;
+  color: #000;
   margin-top: 15px;
   font-weight: 900;
-  box-shadow: 0 10px 35px rgba(102, 126, 234, 0.7);
+  box-shadow: 0 8px 30px rgba(255, 0, 255, 0.6);
 }
 #startScreen {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.96);
+  background: rgba(0,0,0,0.95);
   z-index: 999;
   display: flex;
   align-items: center;
@@ -169,81 +116,97 @@ body {
   text-align: center;
   padding: 20px;
 }
-#startScreen h1 {
-  font-size: 46px;
-  margin-bottom: 15px;
-  background: linear-gradient(45deg, #FFD700, #FFA500);
+#startScreen h1 { 
+  font-size: 42px; 
+  margin-bottom: 15px; 
+  background: linear-gradient(45deg, #FF00FF, #00FFFF, #FFD700);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px rgba(255,215,0,0.5);
+  animation: discoText 2s infinite;
+}
+@keyframes discoText {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(180deg); }
 }
 #startScreen p { font-size: 16px; margin-bottom: 10px; line-height: 1.6; }
 #startScreen button {
   padding: 18px 45px;
   font-size: 22px;
-  background: linear-gradient(135deg, #00ff00 0%, #00aa00 100%);
+  background: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
   border: none;
   border-radius: 15px;
-  color: white;
+  color: #000;
   font-weight: 900;
-  box-shadow: 0 10px 35px rgba(0, 255, 0, 0.7);
+  box-shadow: 0 8px 30px rgba(255, 0, 255, 0.6);
   margin-top: 20px;
 }
-.confetti {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  background: #FFD700;
-  animation: confettiFall 3s linear forwards;
+#powerBar {
+  width: 100%;
+  height: 20px;
+  background: #333;
+  border-radius: 10px;
+  margin-top: 10px;
+  overflow: hidden;
+  border: 2px solid #FF00FF;
 }
-@keyframes confettiFall {
-  to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+#powerFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
+  transition: width 0.1s;
 }
 </style>
 </head>
 <body>
   <div id="startScreen">
-    <h1>🧠 MEMORY PRO 🧠</h1>
-    <p><strong>Rules:</strong></p>
-    <p>⏰ Match all <strong>10 pairs</strong> in <strong>2 minutes</strong></p>
-    <p>🏆 Win = <strong>15 coins</strong> 🎵</p>
-    <p>💀 Time up = <strong>0 coins</strong></p>
-    <p style="margin-top: 15px;">Tap cards to flip + enjoy the music</p>
-    <button onclick="startGame()">START GAME</button>
+    <h1>🕺 ARCHERY DISCO 🕺</h1>
+    <p><strong>DISCO RULES:</strong></p>
+    <p>⏰ Hit target <strong>5 times</strong> in <strong>1 minute</strong></p>
+    <p>🏆 5+ hits = <strong>10 coins</strong> 💰</p>
+    <p>💀 Less than 5 = <strong>0 coins</strong></p>
+    <p>♾️ <strong>Unlimited arrows</strong> + DISCO MUSIC!</p>
+    <p style="margin-top: 15px;">Tap START to drop the beat!</p>
+    <button onclick="startGame()">START DISCO</button>
   </div>
 
   <div id="gameContainer" style="display:none;">
     <div id="ui">
-      <div id="coinsDisplay">💰 <span id="coinsCount">0</span></div>
-      <div id="timerDisplay">⏰ <span id="timeLeft">2:00</span></div>
-      <div id="pairsDisplay">🎯 <span id="pairsCount">0/10</span></div>
+      <div>💰 <span id="coinsCount">0</span></div>
+      <div id="timerDisplay">⏰ <span id="timeLeft">1:00</span></div>
+      <div>🎯 <span id="hitsCount">0/5</span></div>
       <div id="musicBtn" onclick="toggleMusic()">🔊</div>
     </div>
-    <div id="gameGrid"></div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="powerBar"><div id="powerFill"></div></div>
   </div>
 
   <div id="gameOver">
-    <h1 id="gameOverTitle">YOU WIN!</h1>
-    <p style="font-size: 36px; color: gold; font-weight: 900; margin: 15px 0;">+<span id="earnedCoins">15</span> COINS! 💰</p>
-    <p style="font-size: 18px;" id="finalMessage">All 10 pairs matched!</p>
-    <p style="font-size: 16px;" id="finalTime">Time: 0:00</p>
-    <button onclick="resetGame()">PLAY AGAIN</button>
+    <h1 id="gameOverTitle">DISCO WIN!</h1>
+    <p style="font-size: 32px; color: #FF00FF; font-weight: 900; margin: 15px 0;">+<span id="earnedCoins">10</span> COINS! 💰</p>
+    <p style="font-size: 18px;" id="finalMessage">5 targets smashed!</p>
+    <p style="font-size: 16px;" id="finalStats">Hits: 5</p>
+    <button onclick="resetGame()">DISCO AGAIN</button>
   </div>
 
-<audio id="flipSound">
-  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2a7e9d6e3c.mp3" type="audio/mpeg">
+<audio id="shootSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_b4d7b6c4c1.mp3" type="audio/mpeg">
 </audio>
-<audio id="matchSound">
+<audio id="hitSound">
   <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3" type="audio/mpeg">
 </audio>
 <audio id="winSound">
   <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3" type="audio/mpeg">
 </audio>
 <audio id="bgMusic" loop>
-  <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
+  <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_946bc2bb0b.mp3" type="audio/mpeg">
 </audio>
 
 <script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 380;
+canvas.height = 500;
+
 let coins = parseInt(localStorage.getItem('userCoins')) || 0;
 document.getElementById('coinsCount').textContent = coins;
 let musicPlaying = false;
@@ -271,7 +234,7 @@ function toggleMusic() {
     btn.textContent = '🔇';
     musicPlaying = false;
   } else {
-    bgMusic.volume = 0.3;
+    bgMusic.volume = 0.5;
     bgMusic.play().catch(e => {});
     btn.textContent = '🔊';
     musicPlaying = true;
@@ -279,23 +242,13 @@ function toggleMusic() {
 }
 
 let gameRunning = false;
-let timeLeft = 120;
+let timeLeft = 60;
 let timerInterval = null;
-let cards = [];
-let flippedCards = [];
-let matchedPairs = 0;
-let canFlip = true;
-
-const emojis = ['💰','💎','🚀','⭐','🏆','🎯','💵','🔥','🎮','🎁'];
-const gameEmojis = [...emojis,...emojis];
-
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
+let hits = 0;
+let arrows = [];
+let target = { x: 300, y: 250, radius: 40, speed: 2 };
+let bow = { x: 50, y: 250, power: 0, charging: false };
+let wind = (Math.random() - 0.5) * 1.5;
 
 function updateTimer() {
   timeLeft--;
@@ -311,116 +264,247 @@ function startGame() {
   document.getElementById('startScreen').style.display = 'none';
   document.getElementById('gameContainer').style.display = 'block';
   if (!musicPlaying) toggleMusic();
-  initGame();
-  timeLeft = 120;
-  matchedPairs = 0;
-  document.getElementById('pairsCount').textContent = '0/10';
-  document.getElementById('timeLeft').textContent = '2:00';
+  hits = 0;
+  timeLeft = 60;
+  arrows = [];
+  document.getElementById('hitsCount').textContent = '0/5';
+  document.getElementById('timeLeft').textContent = '1:00';
   gameRunning = true;
   timerInterval = setInterval(updateTimer, 1000);
+  gameLoop();
 }
 
-function initGame() {
-  const grid = document.getElementById('gameGrid');
-  grid.innerHTML = '';
-  cards = [];
-  flippedCards = [];
-  matchedPairs = 0;
-  canFlip = true;
+function drawTarget() {
+  ctx.save();
+  ctx.translate(target.x, target.y);
+  
+  ctx.beginPath();
+  ctx.arc(0, 0, target.radius, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFF';
+  ctx.fill();
+  ctx.strokeStyle = '#FF00FF';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  
+  ctx.beginPath();
+  ctx.arc(0, 0, target.radius * 0.8, 0, Math.PI * 2);
+  ctx.fillStyle = '#000';
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(0, 0, target.radius * 0.6, 0, Math.PI * 2);
+  ctx.fillStyle = '#00FFFF';
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(0, 0, target.radius * 0.4, 0, Math.PI * 2);
+  ctx.fillStyle = '#FF00FF';
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(0, 0, target.radius * 0.2, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFD700';
+  ctx.fill();
+  
+  ctx.restore();
+}
 
-  const shuffledEmojis = shuffle([...gameEmojis]);
+function drawBow() {
+  ctx.save();
+  ctx.translate(bow.x, bow.y);
+  
+  ctx.beginPath();
+  ctx.arc(0, 0, 30, -Math.PI/2, Math.PI/2);
+  ctx.strokeStyle = '#FF00FF';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+  
+  ctx.beginPath();
+  ctx.moveTo(0, -30);
+  ctx.lineTo(-bow.power * 0.5, 0);
+  ctx.lineTo(0, 30);
+  ctx.strokeStyle = '#00FFFF';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  
+  ctx.restore();
+}
 
-  shuffledEmojis.forEach((emoji, index) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.dataset.emoji = emoji;
-    card.dataset.index = index;
-    card.innerHTML = `<div class="card-back">❓</div><div class="card-content">${emoji}</div>`;
-    card.addEventListener('click', () => flipCard(card));
-    grid.appendChild(card);
-    cards.push(card);
+function drawArrows() {
+  arrows.forEach(arrow => {
+    ctx.save();
+    ctx.translate(arrow.x, arrow.y);
+    ctx.rotate(arrow.angle);
+    
+    ctx.beginPath();
+    ctx.moveTo(-20, 0);
+    ctx.lineTo(20, 0);
+    ctx.strokeStyle = '#FF00FF';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(20, 0);
+    ctx.lineTo(15, -5);
+    ctx.lineTo(15, 5);
+    ctx.closePath();
+    ctx.fillStyle = '#00FFFF';
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(-20, 0);
+    ctx.lineTo(-15, -5);
+    ctx.lineTo(-15, 5);
+    ctx.closePath();
+    ctx.fillStyle = '#FFD700';
+    ctx.fill();
+    
+    ctx.restore();
   });
 }
 
-function flipCard(card) {
-  if (!gameRunning ||!canFlip || card.classList.contains('flipped') || card.classList.contains('matched')) return;
-
-  playSound('flipSound');
-  card.classList.add('flipped');
-  flippedCards.push(card);
-
-  if (flippedCards.length === 2) {
-    canFlip = false;
-    checkMatch();
+function updateTarget() {
+  target.y += target.speed;
+  if (target.y > canvas.height - target.radius || target.y < target.radius) {
+    target.speed *= -1;
   }
 }
 
-function checkMatch() {
-  const [card1, card2] = flippedCards;
-
-  if (card1.dataset.emoji === card2.dataset.emoji) {
-    playSound('matchSound');
-    card1.classList.add('matched');
-    card2.classList.add('matched');
-    matchedPairs++;
-    document.getElementById('pairsCount').textContent = `${matchedPairs}/10`;
-    flippedCards = [];
-    canFlip = true;
-
-    if (matchedPairs === 10) {
-      endGame('win');
+function updateArrows() {
+  arrows = arrows.filter(arrow => {
+    arrow.x += arrow.vx;
+    arrow.y += arrow.vy;
+    arrow.vy += 0.2;
+    arrow.vx += wind * 0.08;
+    
+    const dx = arrow.x - target.x;
+    const dy = arrow.y - target.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    
+    if (dist < target.radius && !arrow.hit) {
+      arrow.hit = true;
+      hits++;
+      playSound('hitSound');
+      document.getElementById('hitsCount').textContent = `${hits}/5`;
+      if (hits >= 5) {
+        endGame('win');
+      }
+      return false;
     }
-  } else {
-    setTimeout(() => {
-      card1.classList.remove('flipped');
-      card2.classList.remove('flipped');
-      flippedCards = [];
-      canFlip = true;
-    }, 800);
-  }
+    
+    return arrow.x < canvas.width + 50 && arrow.y < canvas.height + 50;
+  });
 }
 
-function createConfetti() {
-  for (let i = 0; i < 50; i++) {
-    setTimeout(() => {
-      const confetti = document.createElement('div');
-      confetti.className = 'confetti';
-      confetti.style.left = Math.random() * 100 + '%';
-      confetti.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
-      confetti.style.animationDelay = Math.random() * 0.5 + 's';
-      document.body.appendChild(confetti);
-      setTimeout(() => confetti.remove(), 3000);
-    }, i * 50);
+function drawBackground() {
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#1a0033');
+  gradient.addColorStop(1, '#8A2BE2');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Disco balls
+  for(let i = 0; i < 3; i++) {
+    ctx.fillStyle = `rgba(255,0,255,${0.3 + Math.sin(Date.now()/500 + i) * 0.2})`;
+    ctx.beginPath();
+    ctx.arc(100 + i*100, 60, 15, 0, Math.PI * 2);
+    ctx.fill();
   }
+  
+  ctx.fillStyle = '#FF00FF';
+  ctx.font = 'bold 14px Arial';
+  ctx.fillText(`💨 Wind: ${wind.toFixed(1)}`, 10, 20);
 }
+
+function gameLoop() {
+  if (!gameRunning) return;
+  
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();
+  updateTarget();
+  updateArrows();
+  drawTarget();
+  drawBow();
+  drawArrows();
+  
+  if (bow.charging) {
+    bow.power = Math.min(bow.power + 2, 100);
+    document.getElementById('powerFill').style.width = bow.power + '%';
+  }
+  
+  requestAnimationFrame(gameLoop);
+}
+
+function shoot() {
+  if (!gameRunning || bow.power < 10) return;
+  
+  playSound('shootSound');
+  const angle = Math.atan2(target.y - bow.y, target.x - bow.x);
+  const speed = bow.power / 5;
+  
+  arrows.push({
+    x: bow.x,
+    y: bow.y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    angle: angle,
+    hit: false
+  });
+  
+  bow.power = 0;
+  document.getElementById('powerFill').style.width = '0%';
+}
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (!gameRunning) return;
+  bow.charging = true;
+  bow.power = 0;
+});
+
+canvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  if (!gameRunning) return;
+  bow.charging = false;
+  shoot();
+});
+
+canvas.addEventListener('mousedown', () => {
+  if (!gameRunning) return;
+  bow.charging = true;
+  bow.power = 0;
+});
+
+canvas.addEventListener('mouseup', () => {
+  if (!gameRunning) return;
+  bow.charging = false;
+  shoot();
+});
 
 function resetGame() {
   document.getElementById('gameOver').style.display = 'none';
   clearInterval(timerInterval);
+  wind = (Math.random() - 0.5) * 1.5;
   startGame();
 }
 
 function endGame(reason) {
   gameRunning = false;
   clearInterval(timerInterval);
-  const timeUsed = 120 - timeLeft;
-  const minutes = Math.floor(timeUsed / 60);
-  const seconds = timeUsed % 60;
-  document.getElementById('finalTime').textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-  if (reason === 'win') {
+  
+  if (hits >= 5) {
     playSound('winSound');
-    addCoins(15);
-    createConfetti();
-    document.getElementById('gameOverTitle').textContent = 'YOU WIN!';
-    document.getElementById('earnedCoins').textContent = '15';
-    document.getElementById('finalMessage').textContent = 'All 10 pairs matched!';
+    addCoins(10);
+    document.getElementById('gameOverTitle').textContent = 'DISCO WIN!';
+    document.getElementById('earnedCoins').textContent = '10';
+    document.getElementById('finalMessage').textContent = `${hits} targets smashed!`;
   } else {
     document.getElementById('gameOverTitle').textContent = "TIME'S UP!";
     document.getElementById('earnedCoins').textContent = '0';
-    document.getElementById('finalMessage').textContent = `You matched ${matchedPairs}/10 pairs`;
+    document.getElementById('finalMessage').textContent = `Only ${hits}/5 hits - Need 5 to win`;
   }
-
+  
+  document.getElementById('finalStats').textContent = `Total Hits: ${hits}`;
   document.getElementById('gameOver').style.display = 'flex';
 }
 </script>
