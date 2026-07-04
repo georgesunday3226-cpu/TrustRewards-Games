@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Archery Disco - TrustRewards</title>
+<title>Disco Bottle Shooter - TrustRewards</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  background: linear-gradient(180deg, #1a0033 0%, #4B0082 50%, #8A2BE2 100%);
+  background: radial-gradient(circle at 50% 20%, #ff0080 0%, #1a0033 40%, #000000 100%);
   font-family: 'Arial Black', sans-serif;
   display: flex;
   justify-content: center;
@@ -17,60 +17,91 @@ body {
   touch-action: manipulation;
 }
 #gameContainer {
-  background: linear-gradient(145deg, #2d1b4e, #4a2c7a);
-  border-radius: 20px;
+  background: linear-gradient(145deg, #1a0033, #330066);
+  border-radius: 25px;
   padding: 15px;
-  box-shadow: 0 20px 60px rgba(138,43,226,0.8), 0 0 40px rgba(255,0,255,0.4);
-  border: 4px solid #FF00FF;
+  box-shadow: 0 0 80px rgba(255,0,128,1), 0 0 120px rgba(0,255,255,0.6);
+  border: 5px solid transparent;
+  background-clip: padding-box;
+  position: relative;
   max-width: 400px;
   width: 95%;
-  animation: discoGlow 2s infinite;
 }
-@keyframes discoGlow {
-  0%, 100% { box-shadow: 0 20px 60px rgba(138,43,226,0.8), 0 0 40px rgba(255,0,255,0.4); }
-  50% { box-shadow: 0 20px 60px rgba(255,20,147,0.8), 0 0 40px rgba(0,255,255,0.4); }
+#gameContainer::before {
+  content: '';
+  position: absolute;
+  top: -5px; left: -5px; right: -5px; bottom: -5px;
+  background: linear-gradient(45deg, #ff0080, #00ffff, #ffff00, #ff0080);
+  border-radius: 25px;
+  z-index: -1;
+  animation: neonSpin 4s linear infinite;
+}
+@keyframes neonSpin {
+  0% { filter: hue-rotate(0deg) brightness(1.8); }
+  100% { filter: hue-rotate(360deg) brightness(1.8); }
 }
 #ui {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 10px;
   padding: 12px;
-  background: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
-  border-radius: 15px;
+  background: linear-gradient(135deg, #ff0080 0%, #ffff00 100%);
+  border-radius: 18px;
   color: #000;
   font-weight: 900;
-  box-shadow: 0 5px 20px rgba(255,0,255,0.6);
+  box-shadow: 0 8px 35px rgba(255,0,128,0.9);
+  border: 3px solid #fff;
 }
 #ui > div {
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
+  text-shadow: 0 0 8px rgba(255,255,255,0.7);
+}
+#conditionBar {
+  background: linear-gradient(90deg, #00ffff, #ff0080, #ffff00);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  color: #000;
+  font-size: 15px;
+  text-align: center;
+  border: 3px solid #fff;
+  font-weight: 900;
+  text-shadow: 0 0 12px rgba(255,255,255,1);
+  animation: conditionFlash 1.5s infinite;
+}
+@keyframes conditionFlash {
+  0%, 100% { box-shadow: 0 0 25px rgba(255,0,128,0.8); }
+  50% { box-shadow: 0 0 40px rgba(0,255,255,1); }
 }
 #timerDisplay {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 900;
-  color: #FF0000;
-  text-shadow: 0 0 10px rgba(255,0,0,0.8);
-  animation: timerPulse 1s infinite;
+  color: #ff0000;
+  text-shadow: 0 0 20px rgba(255,0,0,1);
+  animation: timerBeat 1s infinite;
 }
-@keyframes timerPulse {
+@keyframes timerBeat {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  50% { transform: scale(1.2); }
 }
 #musicBtn {
-  background: rgba(0,0,0,0.3);
-  border: 2px solid #000;
+  background: rgba(0,0,0,0.5);
+  border: 3px solid #fff;
   border-radius: 10px;
   font-size: 18px;
   cursor: pointer;
+  transition: all 0.2s;
 }
-#musicBtn:active { transform: scale(0.9); }
+#musicBtn:active { transform: scale(0.8); }
 #gameCanvas {
   display: block;
   width: 100%;
-  background: linear-gradient(to bottom, #1a0033 0%, #4B0082 60%, #8A2BE2 100%);
-  border-radius: 15px;
-  box-shadow: inset 0 0 30px rgba(255,0,255,0.3);
+  background: radial-gradient(circle at 50% 100%, #330066 0%, #000000 100%);
+  border-radius: 18px;
+  box-shadow: inset 0 0 50px rgba(255,0,128,0.5), 0 0 40px rgba(0,255,255,0.4);
+  border: 4px solid #ff0080;
 }
 #gameOver {
   display: none;
@@ -85,28 +116,31 @@ body {
   color: white;
 }
 #gameOver h1 {
-  font-size: 42px;
+  font-size: 52px;
   margin-bottom: 20px;
-  text-shadow: 0 0 30px #FF00FF;
-  animation: pulse 1s infinite;
+  background: linear-gradient(45deg, #ff0080, #00ffff, #ffff00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: winBounce 0.8s infinite;
+  text-shadow: 0 0 50px #ff0080;
 }
-@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes winBounce { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.15) rotate(2deg); } }
 #gameOver button {
-  padding: 18px 45px;
-  font-size: 22px;
-  background: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
-  border: none;
-  border-radius: 15px;
+  padding: 22px 55px;
+  font-size: 26px;
+  background: linear-gradient(135deg, #ff0080 0%, #00ffff 100%);
+  border: 5px solid #fff;
+  border-radius: 20px;
   color: #000;
-  margin-top: 15px;
+  margin-top: 25px;
   font-weight: 900;
-  box-shadow: 0 8px 30px rgba(255, 0, 255, 0.6);
+  box-shadow: 0 12px 50px rgba(255, 0, 128, 1);
 }
 #startScreen {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.95);
+  background: radial-gradient(circle, #1a0033 0%, #000000 100%);
   z-index: 999;
   display: flex;
   align-items: center;
@@ -116,100 +150,119 @@ body {
   text-align: center;
   padding: 20px;
 }
-#startScreen h1 { 
-  font-size: 42px; 
-  margin-bottom: 15px; 
-  background: linear-gradient(45deg, #FF00FF, #00FFFF, #FFD700);
+#startScreen h1 {
+  font-size: 50px;
+  margin-bottom: 25px;
+  background: linear-gradient(45deg, #ff0080, #00ffff, #ffff00, #ff0080);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: discoText 2s infinite;
+  text-shadow: 0 0 60px rgba(255,0,128,1);
 }
 @keyframes discoText {
-  0%, 100% { filter: hue-rotate(0deg); }
-  50% { filter: hue-rotate(180deg); }
+  0%, 100% { filter: hue-rotate(0deg) brightness(1.3); }
+  50% { filter: hue-rotate(180deg) brightness(1.6); }
 }
-#startScreen p { font-size: 16px; margin-bottom: 10px; line-height: 1.6; }
+#startScreen p { font-size: 18px; margin-bottom: 14px; line-height: 1.7; text-shadow: 0 0 15px rgba(255,0,128,0.8); }
 #startScreen button {
-  padding: 18px 45px;
-  font-size: 22px;
-  background: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
-  border: none;
-  border-radius: 15px;
+  padding: 22px 55px;
+  font-size: 26px;
+  background: linear-gradient(135deg, #ff0080 0%, #00ffff 100%);
+  border: 5px solid #fff;
+  border-radius: 20px;
   color: #000;
   font-weight: 900;
-  box-shadow: 0 8px 30px rgba(255, 0, 255, 0.6);
-  margin-top: 20px;
+  box-shadow: 0 12px 50px rgba(255, 0, 128, 1);
+  margin-top: 30px;
+  animation: btnBeat 1.2s infinite;
 }
-#powerBar {
-  width: 100%;
-  height: 20px;
-  background: #333;
-  border-radius: 10px;
-  margin-top: 10px;
-  overflow: hidden;
-  border: 2px solid #FF00FF;
+@keyframes btnBeat {
+  0%, 100% { transform: scale(1); box-shadow: 0 12px 50px rgba(255, 0, 128, 1); }
+  50% { transform: scale(1.05); box-shadow: 0 18px 60px rgba(0, 255, 255, 1); }
 }
-#powerFill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #00FFFF, #FF00FF, #FFD700);
-  transition: width 0.1s;
+#crosshair {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+  display: none;
+}
+#crosshair::before, #crosshair::after {
+  content: '';
+  position: absolute;
+  background: #00ffff;
+  box-shadow: 0 0 10px #00ffff;
+}
+#crosshair::before {
+  width: 30px;
+  height: 3px;
+  top: 13.5px;
+  left: 0;
+}
+#crosshair::after {
+  width: 3px;
+  height: 30px;
+  left: 13.5px;
+  top: 0;
 }
 </style>
 </head>
 <body>
   <div id="startScreen">
-    <h1>🕺 ARCHERY DISCO 🕺</h1>
-    <p><strong>DISCO RULES:</strong></p>
-    <p>⏰ Hit target <strong>5 times</strong> in <strong>1 minute</strong></p>
-    <p>🏆 5+ hits = <strong>10 coins</strong> 💰</p>
-    <p>💀 Less than 5 = <strong>0 coins</strong></p>
-    <p>♾️ <strong>Unlimited arrows</strong> + DISCO MUSIC!</p>
-    <p style="margin-top: 15px;">Tap START to drop the beat!</p>
-    <button onclick="startGame()">START DISCO</button>
+    <h1>🍾 BOTTLE SHOOTER 🍾</h1>
+    <p><strong>WIN CONDITION:</strong></p>
+    <p>⏰ Smash <strong>5 BOTTLES</strong> in <strong>1 MINUTE</strong></p>
+    <p>🏆 Success = <strong>10 COINS</strong> 💰</p>
+    <p>💀 Fail = <strong>0 COINS</strong></p>
+    <p style="margin-top: 25px; font-size: 20px;">🎵 DISCO MUSIC + NEON BOTTLES 🎵</p>
+    <p style="font-size: 16px; color: #00ffff;">TAP ANYWHERE TO SHOOT!</p>
+    <button onclick="startGame()">START SHOOTING</button>
   </div>
 
   <div id="gameContainer" style="display:none;">
     <div id="ui">
       <div>💰 <span id="coinsCount">0</span></div>
       <div id="timerDisplay">⏰ <span id="timeLeft">1:00</span></div>
-      <div>🎯 <span id="hitsCount">0/5</span></div>
+      <div>🍾 <span id="hitsCount">0/5</span></div>
       <div id="musicBtn" onclick="toggleMusic()">🔊</div>
     </div>
+    <div id="conditionBar">🍾 BOTTLES LEFT: <span id="targetsLeft">5</span> | WIN = 10 COINS 🍾</div>
     <canvas id="gameCanvas"></canvas>
-    <div id="powerBar"><div id="powerFill"></div></div>
+    <div id="crosshair"></div>
   </div>
 
   <div id="gameOver">
-    <h1 id="gameOverTitle">DISCO WIN!</h1>
-    <p style="font-size: 32px; color: #FF00FF; font-weight: 900; margin: 15px 0;">+<span id="earnedCoins">10</span> COINS! 💰</p>
-    <p style="font-size: 18px;" id="finalMessage">5 targets smashed!</p>
-    <p style="font-size: 16px;" id="finalStats">Hits: 5</p>
-    <button onclick="resetGame()">DISCO AGAIN</button>
+    <h1 id="gameOverTitle">SMASHED IT!</h1>
+    <p style="font-size: 42px; color: #ff0080; font-weight: 900; margin: 25px 0; text-shadow: 0 0 30px #ff0080;">+<span id="earnedCoins">10</span> COINS! 💰</p>
+    <p style="font-size: 22px;" id="finalMessage">5 BOTTLES DESTROYED!</p>
+    <p style="font-size: 19px;" id="finalStats">Hits: 5</p>
+    <button onclick="resetGame()">SHOOT AGAIN</button>
   </div>
 
 <audio id="shootSound">
-  <source src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_b4d7b6c4c1.mp3" type="audio/mpeg">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_5c4e6c7b4f.mp3" type="audio/mpeg">
 </audio>
-<audio id="hitSound">
-  <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3" type="audio/mpeg">
+<audio id="breakSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2a7e9d6e3c.mp3" type="audio/mpeg">
 </audio>
 <audio id="winSound">
   <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3" type="audio/mpeg">
 </audio>
-<audio id="bgMusic" loop>
+<audio id="bgMusic" loop preload="auto">
   <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_946bc2bb0b.mp3" type="audio/mpeg">
 </audio>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const crosshair = document.getElementById('crosshair');
 canvas.width = 380;
 canvas.height = 500;
 
 let coins = parseInt(localStorage.getItem('userCoins')) || 0;
 document.getElementById('coinsCount').textContent = coins;
 let musicPlaying = false;
+const TARGET_GOAL = 5;
 
 function addCoins(amount) {
   coins += amount;
@@ -223,21 +276,26 @@ function addCoins(amount) {
 function playSound(id) {
   const audio = document.getElementById(id);
   audio.currentTime = 0;
-  audio.play().catch(e => {});
+  audio.play().catch(e => console.log('Sound error:', e));
 }
 
 function toggleMusic() {
   const bgMusic = document.getElementById('bgMusic');
   const btn = document.getElementById('musicBtn');
+
   if (musicPlaying) {
     bgMusic.pause();
     btn.textContent = '🔇';
     musicPlaying = false;
   } else {
-    bgMusic.volume = 0.5;
-    bgMusic.play().catch(e => {});
-    btn.textContent = '🔊';
-    musicPlaying = true;
+    bgMusic.volume = 0.7;
+    bgMusic.play().then(() => {
+      btn.textContent = '🔊';
+      musicPlaying = true;
+    }).catch(e => {
+      console.log('Music error:', e);
+      alert('Tap START button first to enable music!');
+    });
   }
 }
 
@@ -245,10 +303,9 @@ let gameRunning = false;
 let timeLeft = 60;
 let timerInterval = null;
 let hits = 0;
-let arrows = [];
-let target = { x: 300, y: 250, radius: 40, speed: 2 };
-let bow = { x: 50, y: 250, power: 0, charging: false };
-let wind = (Math.random() - 0.5) * 1.5;
+let bottles = [];
+let particles = [];
+let laserBeams = [];
 
 function updateTimer() {
   timeLeft--;
@@ -260,250 +317,267 @@ function updateTimer() {
   }
 }
 
+function updateDisplay() {
+  const remaining = Math.max(0, TARGET_GOAL - hits);
+  document.getElementById('targetsLeft').textContent = remaining;
+  document.getElementById('hitsCount').textContent = `${hits}/${TARGET_GOAL}`;
+}
+
+function createBottle() {
+  return {
+    x: Math.random() * (canvas.width - 60) + 30,
+    y: Math.random() * 200 + 50,
+    width: 35,
+    height: 60,
+    vx: (Math.random() - 0.5) * 3,
+    vy: Math.random() * 1 + 0.5,
+    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+    rotation: Math.random() * 0.1 - 0.05,
+    rotSpeed: (Math.random() - 0.5) * 0.05,
+    glowPhase: Math.random() * Math.PI * 2
+  };
+}
+
 function startGame() {
   document.getElementById('startScreen').style.display = 'none';
   document.getElementById('gameContainer').style.display = 'block';
-  if (!musicPlaying) toggleMusic();
+  crosshair.style.display = 'block';
+
+  // Force music to play on start
+  const bgMusic = document.getElementById('bgMusic');
+  bgMusic.volume = 0.7;
+  bgMusic.play().then(() => {
+    musicPlaying = true;
+    document.getElementById('musicBtn').textContent = '🔊';
+  }).catch(e => console.log('Music start error:', e));
+
   hits = 0;
   timeLeft = 60;
-  arrows = [];
-  document.getElementById('hitsCount').textContent = '0/5';
+  bottles = [];
+  particles = [];
+  laserBeams = [];
+
+  for(let i = 0; i < 5; i++) {
+    bottles.push(createBottle());
+  }
+
+  updateDisplay();
   document.getElementById('timeLeft').textContent = '1:00';
   gameRunning = true;
   timerInterval = setInterval(updateTimer, 1000);
   gameLoop();
 }
 
-function drawTarget() {
-  ctx.save();
-  ctx.translate(target.x, target.y);
-  
-  ctx.beginPath();
-  ctx.arc(0, 0, target.radius, 0, Math.PI * 2);
-  ctx.fillStyle = '#FFF';
-  ctx.fill();
-  ctx.strokeStyle = '#FF00FF';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  
-  ctx.beginPath();
-  ctx.arc(0, 0, target.radius * 0.8, 0, Math.PI * 2);
-  ctx.fillStyle = '#000';
-  ctx.fill();
-  
-  ctx.beginPath();
-  ctx.arc(0, 0, target.radius * 0.6, 0, Math.PI * 2);
-  ctx.fillStyle = '#00FFFF';
-  ctx.fill();
-  
-  ctx.beginPath();
-  ctx.arc(0, 0, target.radius * 0.4, 0, Math.PI * 2);
-  ctx.fillStyle = '#FF00FF';
-  ctx.fill();
-  
-  ctx.beginPath();
-  ctx.arc(0, 0, target.radius * 0.2, 0, Math.PI * 2);
-  ctx.fillStyle = '#FFD700';
-  ctx.fill();
-  
-  ctx.restore();
+function createShatter(x, y, color) {
+  for(let i = 0; i < 25; i++) {
+    particles.push({
+      x: x,
+      y: y,
+      vx: (Math.random() - 0.5) * 12,
+      vy: (Math.random() - 0.5) * 12,
+      life: 40,
+      color: color,
+      size: Math.random() * 5 + 2
+    });
+  }
 }
 
-function drawBow() {
-  ctx.save();
-  ctx.translate(bow.x, bow.y);
-  
-  ctx.beginPath();
-  ctx.arc(0, 0, 30, -Math.PI/2, Math.PI/2);
-  ctx.strokeStyle = '#FF00FF';
-  ctx.lineWidth = 6;
-  ctx.stroke();
-  
-  ctx.beginPath();
-  ctx.moveTo(0, -30);
-  ctx.lineTo(-bow.power * 0.5, 0);
-  ctx.lineTo(0, 30);
-  ctx.strokeStyle = '#00FFFF';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  ctx.restore();
-}
+function drawBottles() {
+  bottles.forEach(bottle => {
+    bottle.glowPhase += 0.1;
+    const glow = Math.sin(bottle.glowPhase) * 0.3 + 0.7;
 
-function drawArrows() {
-  arrows.forEach(arrow => {
     ctx.save();
-    ctx.translate(arrow.x, arrow.y);
-    ctx.rotate(arrow.angle);
-    
-    ctx.beginPath();
-    ctx.moveTo(-20, 0);
-    ctx.lineTo(20, 0);
-    ctx.strokeStyle = '#FF00FF';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(20, 0);
-    ctx.lineTo(15, -5);
-    ctx.lineTo(15, 5);
-    ctx.closePath();
-    ctx.fillStyle = '#00FFFF';
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.moveTo(-20, 0);
-    ctx.lineTo(-15, -5);
-    ctx.lineTo(-15, 5);
-    ctx.closePath();
-    ctx.fillStyle = '#FFD700';
-    ctx.fill();
-    
+    ctx.translate(bottle.x + bottle.width/2, bottle.y + bottle.height/2);
+    ctx.rotate(bottle.rotation);
+
+    // Glow
+    ctx.shadowBlur = 25 * glow;
+    ctx.shadowColor = bottle.color;
+
+    // Bottle body
+    ctx.fillStyle = bottle.color;
+    ctx.fillRect(-bottle.width/2, -bottle.height/2, bottle.width, bottle.height);
+
+    // Bottle neck
+    ctx.fillRect(-bottle.width/4, -bottle.height/2 - 15, bottle.width/2, 15);
+
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillRect(-bottle.width/2 + 5, -bottle.height/2, 8, bottle.height);
+
     ctx.restore();
   });
 }
 
-function updateTarget() {
-  target.y += target.speed;
-  if (target.y > canvas.height - target.radius || target.y < target.radius) {
-    target.speed *= -1;
-  }
+function drawParticles() {
+  particles = particles.filter(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+    p.vy += 0.4;
+
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.life / 40;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
+    return p.life > 0;
+  });
 }
 
-function updateArrows() {
-  arrows = arrows.filter(arrow => {
-    arrow.x += arrow.vx;
-    arrow.y += arrow.vy;
-    arrow.vy += 0.2;
-    arrow.vx += wind * 0.08;
-    
-    const dx = arrow.x - target.x;
-    const dy = arrow.y - target.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    
-    if (dist < target.radius && !arrow.hit) {
-      arrow.hit = true;
-      hits++;
-      playSound('hitSound');
-      document.getElementById('hitsCount').textContent = `${hits}/5`;
-      if (hits >= 5) {
-        endGame('win');
-      }
-      return false;
+function drawLasers() {
+  laserBeams = laserBeams.filter(beam => {
+    beam.life--;
+    ctx.strokeStyle = `rgba(0,255,255,${beam.life / 10})`;
+    ctx.lineWidth = 4;
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#00ffff';
+    ctx.beginPath();
+    ctx.moveTo(beam.x1, beam.y1);
+    ctx.lineTo(beam.x2, beam.y2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    return beam.life > 0;
+  });
+}
+
+function updateBottles() {
+  bottles.forEach(bottle => {
+    bottle.x += bottle.vx;
+    bottle.y += bottle.vy;
+    bottle.rotation += bottle.rotSpeed;
+
+    if (bottle.x <= 0 || bottle.x >= canvas.width - bottle.width) {
+      bottle.vx *= -1;
     }
-    
-    return arrow.x < canvas.width + 50 && arrow.y < canvas.height + 50;
+    if (bottle.y <= 0 || bottle.y >= canvas.height - bottle.height) {
+      bottle.vy *= -1;
+    }
   });
 }
 
 function drawBackground() {
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#1a0033');
-  gradient.addColorStop(1, '#8A2BE2');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  // Disco balls
-  for(let i = 0; i < 3; i++) {
-    ctx.fillStyle = `rgba(255,0,255,${0.3 + Math.sin(Date.now()/500 + i) * 0.2})`;
-    ctx.beginPath();
-    ctx.arc(100 + i*100, 60, 15, 0, Math.PI * 2);
-    ctx.fill();
+  // Disco floor tiles
+  for(let i = 0; i < 8; i++) {
+    for(let j = 0; j < 10; j++) {
+      const pulse = Math.sin(Date.now()/300 + i + j) * 0.15 + 0.85;
+      const hue = (i + j) * 30 + Date.now()/50;
+      ctx.fillStyle = `hsla(${hue % 360}, 100%, 50%, ${pulse * 0.3})`;
+      ctx.fillRect(i * 47.5, j * 50, 47.5, 50);
+    }
   }
-  
-  ctx.fillStyle = '#FF00FF';
-  ctx.font = 'bold 14px Arial';
-  ctx.fillText(`💨 Wind: ${wind.toFixed(1)}`, 10, 20);
+
+  // Neon grid
+  ctx.strokeStyle = 'rgba(255,0,128,0.3)';
+  ctx.lineWidth = 2;
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = '#ff0080';
+  for(let i = 0; i < canvas.width; i += 40) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i, canvas.height);
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 0;
 }
 
 function gameLoop() {
   if (!gameRunning) return;
-  
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
-  updateTarget();
-  updateArrows();
-  drawTarget();
-  drawBow();
-  drawArrows();
-  
-  if (bow.charging) {
-    bow.power = Math.min(bow.power + 2, 100);
-    document.getElementById('powerFill').style.width = bow.power + '%';
-  }
-  
+  updateBottles();
+  drawBottles();
+  drawParticles();
+  drawLasers();
+
   requestAnimationFrame(gameLoop);
 }
 
-function shoot() {
-  if (!gameRunning || bow.power < 10) return;
-  
+function shoot(x, y) {
+  if (!gameRunning) return;
+
   playSound('shootSound');
-  const angle = Math.atan2(target.y - bow.y, target.x - bow.x);
-  const speed = bow.power / 5;
-  
-  arrows.push({
-    x: bow.x,
-    y: bow.y,
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed,
-    angle: angle,
-    hit: false
+
+  // Laser beam effect
+  laserBeams.push({
+    x1: canvas.width / 2,
+    y1: canvas.height,
+    x2: x,
+    y2: y,
+    life: 10
   });
-  
-  bow.power = 0;
-  document.getElementById('powerFill').style.width = '0%';
+
+  // Check hit
+  bottles = bottles.filter(bottle => {
+    if (x >= bottle.x && x <= bottle.x + bottle.width &&
+        y >= bottle.y && y <= bottle.y + bottle.height) {
+      hits++;
+      playSound('breakSound');
+      createShatter(bottle.x + bottle.width/2, bottle.y + bottle.height/2, bottle.color);
+      updateDisplay();
+
+      if (hits >= TARGET_GOAL) {
+        endGame('win');
+      }
+      return false;
+    }
+    return true;
+  });
 }
 
 canvas.addEventListener('touchstart', (e) => {
   e.preventDefault();
   if (!gameRunning) return;
-  bow.charging = true;
-  bow.power = 0;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.touches[0].clientX - rect.left;
+  const y = e.touches[0].clientY - rect.top;
+  shoot(x, y);
 });
 
-canvas.addEventListener('touchend', (e) => {
-  e.preventDefault();
+canvas.addEventListener('mousedown', (e) => {
   if (!gameRunning) return;
-  bow.charging = false;
-  shoot();
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  shoot(x, y);
 });
 
-canvas.addEventListener('mousedown', () => {
-  if (!gameRunning) return;
-  bow.charging = true;
-  bow.power = 0;
-});
-
-canvas.addEventListener('mouseup', () => {
-  if (!gameRunning) return;
-  bow.charging = false;
-  shoot();
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  crosshair.style.left = (e.clientX - 15) + 'px';
+  crosshair.style.top = (e.clientY - 15) + 'px';
 });
 
 function resetGame() {
   document.getElementById('gameOver').style.display = 'none';
   clearInterval(timerInterval);
-  wind = (Math.random() - 0.5) * 1.5;
   startGame();
 }
 
 function endGame(reason) {
   gameRunning = false;
   clearInterval(timerInterval);
-  
-  if (hits >= 5) {
+  crosshair.style.display = 'none';
+
+  if (hits >= TARGET_GOAL) {
     playSound('winSound');
     addCoins(10);
-    document.getElementById('gameOverTitle').textContent = 'DISCO WIN!';
+    document.getElementById('gameOverTitle').textContent = 'SMASHED IT!';
     document.getElementById('earnedCoins').textContent = '10';
-    document.getElementById('finalMessage').textContent = `${hits} targets smashed!`;
+    document.getElementById('finalMessage').textContent = `${hits} BOTTLES DESTROYED!`;
   } else {
     document.getElementById('gameOverTitle').textContent = "TIME'S UP!";
     document.getElementById('earnedCoins').textContent = '0';
-    document.getElementById('finalMessage').textContent = `Only ${hits}/5 hits - Need 5 to win`;
+    document.getElementById('finalMessage').textContent = `Only ${hits}/${TARGET_GOAL} - NEED ${TARGET_GOAL} TO WIN`;
   }
-  
+
   document.getElementById('finalStats').textContent = `Total Hits: ${hits}`;
   document.getElementById('gameOver').style.display = 'flex';
 }
